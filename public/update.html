@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="coi-serviceworker.js"></script>
+    <title>Update - Voice Beats</title>
+    <link rel="icon" href="sample/logo-tab.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+</head>
+<body class="howto-body">
+    <header>
+        <img src="sample/logo.png" alt="Logo" class="logo"> <!-- ロゴ画像を追加 -->
+        <h1>Voice Beats</h1> <!-- ヘッダタイトル -->
+        <div id="bpm-display">♩=128</div> <!-- 現在のBPM表示 -->
+        <div class="dropdown">
+            <button class="dropbtn">1/8</button>
+            <div class="dropdown-content">
+                <a href="#" data-precision="1/8">1/8</a>
+                <a href="#" data-precision="1/8T">1/8T</a>
+                <a href="#" data-precision="1/16">1/16</a>
+            </div>
+        </div>
+        <button id="export" class="export-button"></button> <!-- エクスポートボタン -->
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="howto.html">HOW TO</a></li>
+            <li><a href="update.html">UPDATE</a></li>
+            <li><a href="about.html">ABOUT</a></li>
+        </ul>
+    </nav>
+    <main>
+        <h2>アップデート情報</h2>
+        <hr class="separator">
+        <section>
+            <h3>バージョン 1.0.0 - 2024年12月28日</h3>
+            <ul>
+                <li>基本的な機能を実装しました。</li>
+            </ul>
+        </section>
+    </main>
+    <footer class="howto-footer">
+        <p>&copy; 2024 Mayday</p> <!-- フッタ -->
+    </footer>
+</body>
+</html>

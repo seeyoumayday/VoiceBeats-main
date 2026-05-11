@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Beats</title>
+    <script src="coi-serviceworker.js"></script>
+    <link rel="icon" href="sample/logo-tab.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css"> <!-- CSSファイルのリンク -->
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.0/dist/ffmpeg.min.js"></script> <!-- ffmpeg.wasmのスクリプトを追加 -->
+</head>
+<body>
+    <header>
+        <img src="sample/logo.png" alt="Logo" class="logo"> <!-- ロゴ画像を追加 -->
+        <h1>Voice Beats</h1> <!-- ヘッダタイトル -->
+        <div id="bpm-display">♩=128</div> <!-- 現在のBPM表示 -->
+        <div class="dropdown">
+            <button class="dropbtn">1/8</button>
+            <div class="dropdown-content">
+                <a href="#" data-precision="1/8">1/8</a>
+                <a href="#" data-precision="1/8T">1/8T</a>
+                <a href="#" data-precision="1/16">1/16</a>
+            </div>
+        </div>
+        <button id="export" class="export-button"></button> <!-- エクスポートボタン -->
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="howto.html">HOW TO</a></li>
+            <li><a href="update.html">UPDATE</a></li>
+            <li><a href="about.html">ABOUT</a></li>
+        </ul>
+    </nav>
+    <main>
+        <div class="visualize-container">
+            <canvas id="visualizer" class="visualizer"></canvas> <!-- オーディオビジュアライザのキャンバスを追加 -->
+            <canvas id="spectrum" class="spectrum"></canvas> <!-- スペクトラムのキャンバスを追加 -->
+        </div>
+        <div id="sequencer">
+            <div class="track-container">
+                <div class="track kick">
+                    <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5"> <!-- キックピッチベンド調節バー -->
+                    <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5"> <!-- キック音量調節バー -->
+                    <button class="mute-button"></button> <!-- ミュートボタンを追加 -->
+                    <button class="step"></button> <!-- キックステップボタン -->
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    <div class="waveform-container">
+                        <canvas class="waveform" id="kick-waveform"></canvas>
+                        <div class="offset-handle"></div>
+                        <div class="end-offset-handle"></div>
+                        <div class="offset-overlay"></div>
+                        <div class="end-offset-overlay"></div>
+                    </div>
+                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0"> <!-- キックオフセット調節バー -->
+                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1"> <!-- キック終了位置調節バー -->
+                </div>
+                <div class="track snare">
+                    <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5"> <!-- スネアピッチベンド調節バー -->
+                    <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5"> <!-- スネア音量調節バー -->
+                    <button class="mute-button"></button> <!-- ミュートボタンを追加 -->
+                    <button class="step"></button> <!-- スネアステップボタン -->
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    <div class="waveform-container">
+                        <canvas class="waveform" id="snare-waveform"></canvas>
+                        <div class="offset-handle"></div>
+                        <div class="end-offset-handle"></div>
+                        <div class="offset-overlay"></div>
+                        <div class="end-offset-overlay"></div>
+                    </div>
+                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0"> <!-- スネアオフセット調節バー -->
+                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1"> <!-- スネア終了位置調節バー -->
+                </div>
+                <div class="track clap">
+                    <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5"> <!-- クラップピッチベンド調節バー -->
+                    <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5"> <!-- クラップ音量調節バー -->
+                    <button class="mute-button"></button> <!-- ミュートボタンを追加 -->
+                    <button class="step"></button> <!-- クラップステップボタン -->
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    <div class="waveform-container">
+                        <canvas class="waveform" id="clap-waveform"></canvas>
+                        <div class="offset-handle"></div>
+                        <div class="end-offset-handle"></div>
+                        <div class="offset-overlay"></div>
+                        <div class="end-offset-overlay"></div>
+                    </div>
+                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0"> <!-- クラップオフセット調節バー -->
+                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1"> <!-- クラップ終了位置調節バー -->
+                </div>
+                <div class="track hihat">
+                    <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5"> <!-- ハイハットピッチベンド調節バー -->
+                    <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5"> <!-- ハイハット音量調節バー -->
+                    <button class="mute-button"></button> <!-- ミュートボタンを追加 -->
+                    <button class="step"></button> <!-- ハイハットステップボタン -->
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    <div class="waveform-container">
+                        <canvas class="waveform" id="hihat-waveform"></canvas>
+                        <div class="offset-handle"></div>
+                        <div class="end-offset-handle"></div>
+                        <div class="offset-overlay"></div>
+                        <div class="end-offset-overlay"></div>
+                    </div>
+                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0"> <!-- ハイハットオフセット調節バー -->
+                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1"> <!-- ハイハット終了位置調節バー -->
+                </div>
+                <div class="track bell">
+                    <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5"> <!-- ベルピッチベンド調節バー -->
+                    <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5"> <!-- ベル音量調節バー -->
+                    <button class="mute-button"></button> <!-- ミュートボタンを追加 -->
+                    <button class="step"></button> <!-- ベルステップボタン -->
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="step"></button>
+                    <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    <div class="waveform-container">
+                        <canvas class="waveform" id="bell-waveform"></canvas>
+                        <div class="offset-handle"></div>
+                        <div class="end-offset-handle"></div>
+                        <div class="offset-overlay"></div>
+                        <div class="end-offset-overlay"></div>
+                    </div>
+                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0"> <!-- ベルオフセット調節バー -->
+                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1"> <!-- ベル終了位置調節バー -->
+                </div>
+            </div>
+        </div>
+        <button id="play"></button> <!-- 再生ボタン -->
+        <div id="volume-container">
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5"> <!-- 音量バーを追加 -->
+        </div>
+        <div id="bpm-container">
+            <label for="bpm"></label> 
+            <input type="range" id="bpm" min="60" max="200" step="1" value="128"> 
+        </div>
+    </main>
+    <footer class = "index-footer">
+        <p>&copy; 2024 Mayday</p> <!-- フッタ -->
+    </footer>
+    
+    <script src="script.js" type="module"></script> <!-- JavaScriptファイルのリンクを修正 -->
+</body>
+</html>

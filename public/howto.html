@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="coi-serviceworker.js"></script>
+    <title>How to Use - Voice Beats</title>
+    <link rel="icon" href="sample/logo-tab.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+</head>
+<body class = "howto-body">
+    <header>
+        <img src="sample/logo.png" alt="Logo" class="logo"> <!-- ロゴ画像を追加 -->
+        <h1>Voice Beats</h1> <!-- ヘッダタイトル -->
+        <div id="bpm-display">♩=128</div> <!-- 現在のBPM表示 -->
+        <div class="dropdown">
+            <button class="dropbtn">1/8</button>
+            <div class="dropdown-content">
+                <a href="#" data-precision="1/8">1/8</a>
+                <a href="#" data-precision="1/8T">1/8T</a>
+                <a href="#" data-precision="1/16">1/16</a>
+            </div>
+        </div>
+        <button id="export" class="export-button"></button> <!-- エクスポートボタン -->
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="howto.html">HOW TO</a></li>
+            <li><a href="update.html">UPDATE</a></li>
+            <li><a href="about.html">ABOUT</a></li>
+        </ul>
+    </nav>
+    <main>
+        <h2>概要説明</h2>
+        <hr class="separator" style="margin-bottom: 20px; width: 20%;">
+        <section>
+            <p>Voice Beatsは、「いつでもどこでも作曲を」というモットーのもと制作された、web上で動くサンプラーです！</p>
+        </section>
+        <h2>使い方</h2>
+        <hr class="separator" style="margin-bottom: 20px; width: 20%;">
+        <section>
+            <div style="display: flex; justify-content: center; align-items: flex-start;">
+                <div style="display: flex; flex-direction: column; margin-right: 20px; margin-top: 50px;">
+                    <img src="sample/howto1.jpg" alt="How to use image 1" class="howto-image" style="width: 100%; height: auto; margin-bottom: 20px;">
+                    <img src="sample/howto2.png" alt="How to use image 2" class="howto-image" style="width: 50%; height: auto; margin-left: 25%;">
+                </div>
+                <div>
+                    <h3>①ピッチベンド</h3>
+                    <p>各トラックのピッチを上下にずらすことができます。</p>
+                    <h3>②ボリュームコントロール</h3>
+                    <p>各トラックのボリュームを調節できます。</p>
+                    <h3>③ミュート</h3>
+                    <p>各トラックをミュートにすることができます。</p>
+                    <p>ミュートボタンが緑のとき、トラックは再生されます。</p>
+                    <h3>④ステップ</h3>
+                    <p>ステップをクリックすることでステップの音が出るかどうかを切り替えられます。</p>
+                    <h3>⑤録音</h3>
+                    <p>録音ボタンをクリックすることで、トラックで再生する音を録音できます。</p>
+                    <h3>⑥トラックの波形表示とオフセットの調整</h3>
+                    <p>各トラックのファイルがどこからどこまで再生されるか調節することができます。</p>
+                    <h3>⑦再生</h3>
+                    <p>再生ボタンをクリックすることで、トラックを再生できます。</p>
+                    <h3>⑧BPM変更</h3>
+                    <p>テンポを変更することができます。</p>
+                    <h3>⑨リズムの細かさの変更</h3>
+                    <p>1/8、1/8T、1/16から、リズムの細かさを選べます。</p>
+                    <h3>⑩エクスポート</h3>
+                    <p>エクスポートボタンをクリックすることで、作成した音楽をwav形式でダウンロードできます。</p>
+                </div>
+            </div>
+        </section>
+    <h2>注意事項</h2>
+    <hr class="separator" style="margin-bottom: 20px; width: 20%;">
+    <section>
+        <p style="display: flex; justify-content: center; align-items: flex-start;">当サイトでデフォルトに設定された音源は、サイト作成者自身の肉声を加工したものです。</p>
+        <p style="display: flex; justify-content: center; align-items: flex-start;">そのため、ユーザ様ご自身の楽曲に利用することは全く問題ありません。</p>
+        <p style="display: flex; justify-content: center; align-items: flex-start;">ただし、当サイトでデフォルトに設定された音源素材の著作権を主張したり、音源素材を再配布したりすることをかたく禁止させていただきます。</p>
+    </section>
+    <h2>免責事項</h2>
+    <hr class="separator" style="margin-bottom: 20px; width: 20%;">
+    <section>
+        <p>当サイトを利用したことによるいかなる損害に対しても、当サイトは一切の責任を負いません。</p>
+        <p>また、当サイトの利用によって生じたいかなる問題に対しても、当サイトは一切の責任を負いません。</p>
+    </section>
+    </main>
+    <footer class="howto-footer">
+        <p>&copy; 2024 Mayday</p> <!-- フッタ -->
+    </footer>
+</body>
+</html>

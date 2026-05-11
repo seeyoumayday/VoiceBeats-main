@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="coi-serviceworker.js"></script>
+    <title>About - Voice Beats</title>
+    <link rel="icon" href="sample/logo-tab.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="same-origin">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+</head>
+<body class="about-body">
+    <header>
+        <img src="sample/logo.png" alt="Logo" class="logo"> <!-- ロゴ画像を追加 -->
+        <h1>Voice Beats</h1> <!-- ヘッダタイトル -->
+        <div id="bpm-display">♩=128</div> <!-- 現在のBPM表示 -->
+        <div class="dropdown">
+            <button class="dropbtn">1/8</button>
+            <div class="dropdown-content">
+                <a href="#" data-precision="1/8">1/8</a>
+                <a href="#" data-precision="1/8T">1/8T</a>
+                <a href="#" data-precision="1/16">1/16</a>
+            </div>
+        </div>
+        <button id="export" class="export-button"></button> <!-- エクスポートボタン -->
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="howto.html">HOW TO</a></li>
+            <li><a href="update.html">UPDATE</a></li>
+            <li><a href="about.html">ABOUT</a></li>
+        </ul>
+    </nav>
+    <main class="about-main">
+        <section class="about-left">
+            <img src="sample/icon.PNG" alt="My Icon" class="my-icon"> <!-- アイコン画像を追加 -->
+            <hr class="separator"><h2>自己紹介</h2>
+            <p>五月一日と申します。<br><br>
+            ポケポケでピジョットexを無駄に5枚持っています。<br><br>
+            楽曲制作をしたり、ベースを弾いたりして活動しています。</p>
+            <br>
+            <hr class="separator">
+            <h3>活動</h3>
+            <ul class = "twitter">Twitter :   <a href="https://x.com/Seeyou_Mayday" target="_blank">@Seeyou_Mayday</a></ul>
+            <ul class = "twitter">niconico :   <a href="https://www.nicovideo.jp/watch/sm42902596" target="_blank">ニコニコ</a></ul>
+        </section>
+        <section class="about-right">
+            <h2>最近の投稿</h2>
+            <hr class="separator">
+            <br>
+            <div id="twitter-feed">
+                <!-- Twitterのウィジェットコードをここに追加 -->
+                <a class="twitter-timeline" data-width="400" data-height="444" href="https://twitter.com/Seeyou_Mayday?ref_src=twsrc%5Etfw">Tweets by Seeyou_Mayday</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            </div>
+        </section>
+    </main>
+    <footer class="about-footer">
+        <p>&copy; 2024 Mayday</p> <!-- フッタ -->
+    </footer>
+</body>
+</html>
