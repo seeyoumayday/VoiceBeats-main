@@ -1,24 +1,30 @@
 @import url('https://fonts.googleapis.com/css?family=Ubuntu+Mono');
 @import url('https://fonts.googleapis.com/css?family=M+PLUS+1p');
+
 body {
-    font-family: Arial, sans-serif; /* フォント設定 */
+    font-family: Arial, sans-serif;
+    /* フォント設定 */
     display: flex;
     flex-direction: column;
     align-items: center;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4; /* 背景色 */
+    background-color: #f4f4f4;
+    /* 背景色 */
 }
 
 header {
     width: 100%;
-    background: linear-gradient(90deg, #76c7c0, #4ca1af); /* ヘッダの背景色をグラデーションに変更 */
-    color: rgba(250, 250, 250, 0.959); /* ヘッダの文字色 */
+    background: linear-gradient(90deg, #76c7c0, #4ca1af);
+    /* ヘッダの背景色をグラデーションに変更 */
+    color: rgba(250, 250, 250, 0.959);
+    /* ヘッダの文字色 */
     /*font-family: 'Ubuntu Mono', monospace;*/
     font-family: 'M PLUS 1p', sans-serif;
     padding: 10px 0;
     text-align: center;
-    position: relative; /* BPM表示のために相対位置を設定 */
+    position: relative;
+    /* BPM表示のために相対位置を設定 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,7 +33,8 @@ header {
 header img.logo {
     width: 40px;
     height: 40px;
-    margin-right: 10px; /* タイトルとの間に余白を追加 */
+    margin-right: 10px;
+    /* タイトルとの間に余白を追加 */
 }
 
 .howto-body {
@@ -45,15 +52,19 @@ header img.logo {
 
 #bpm-display {
     position: absolute;
-    right: 120px; /* エクスポートボタンの左側に配置 */
+    right: 120px;
+    /* エクスポートボタンの左側に配置 */
     top: 40%;
     transform: translateY(0%);
     font-size: 16px;
-    cursor: ns-resize; /* 上下ドラッグ用のカーソル */
-    user-select: none; /* テキスト選択を無効にする */
+    cursor: ns-resize;
+    /* 上下ドラッグ用のカーソル */
+    user-select: none;
+    /* テキスト選択を無効にする */
 }
 
-#bpm-display::before, #bpm-display::after {
+#bpm-display::before,
+#bpm-display::after {
     content: '';
     position: absolute;
     left: 50%;
@@ -61,7 +72,8 @@ header img.logo {
     border-style: solid;
     border-width: 5px;
     border-color: transparent;
-    cursor: pointer; /* 矢印をクリック可能にする */
+    cursor: pointer;
+    /* 矢印をクリック可能にする */
 }
 
 #bpm-display::before {
@@ -85,7 +97,8 @@ header img.logo {
 footer.index-footer {
     width: 100%;
     background: linear-gradient(90deg, #76c7c0, #4ca1af);
-    color: rgba(250, 250, 250, 0.959); /* フッタの文字色 */
+    color: rgba(250, 250, 250, 0.959);
+    /* フッタの文字色 */
     font-family: 'M PLUS 1p', sans-serif;
     padding: 10px 0;
     text-align: center;
@@ -96,7 +109,8 @@ footer.index-footer {
 footer.howto-footer {
     width: 100%;
     background: linear-gradient(90deg, #76c7c0, #4ca1af);
-    color: rgba(250, 250, 250, 0.959); /* フッタの文字色 */
+    color: rgba(250, 250, 250, 0.959);
+    /* フッタの文字色 */
     font-family: 'M PLUS 1p', sans-serif;
     padding: 10px 0;
     text-align: center;
@@ -115,90 +129,112 @@ main {
 
 #sequencer {
     display: flex;
-    flex-direction: column; /* 縦に並べる */
-    gap: 0px; /* トラック間の余白を追加 */
+    flex-direction: column;
+    /* 縦に並べる */
+    gap: 0px;
+    /* トラック間の余白を追加 */
     justify-content: center;
     margin-top: 0px;
     margin-bottom: 10px;
-    padding: 20px; /* シーケンサに余白を追加 */
+    padding: 20px;
+    /* シーケンサに余白を追加 */
 }
 
 .track-container {
     display: flex;
     align-items: center;
     flex-direction: column;
-    gap: 0px; /* トラック間の余白を追加 */
+    gap: 0px;
+    /* トラック間の余白を追加 */
 }
 
 /* Safari用のスタイル */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
-    _::-webkit-full-page-media, _:future, body {
+
+    _::-webkit-full-page-media,
+    _:future,
+    body {
         .track-container {
-            margin-left: 180px; /* Google Chrome用のmargin-left */
+            margin-left: 180px;
+            /* Google Chrome用のmargin-left */
         }
     }
-  }
+}
+
 /* Google Chrome用のスタイル */
 @media screen and (-webkit-min-device-pixel-ratio:0) {
     .track-container {
-        margin-left: 0px; /* Google Chrome用のmargin-left */
+        margin-left: 0px;
+        /* Google Chrome用のmargin-left */
     }
 }
 
 .track {
     display: flex;
-    align-items: center; /* トラック内のアイテムを中央揃え */
+    align-items: center;
+    /* トラック内のアイテムを中央揃え */
     gap: 5px;
-    margin-top: 5px; /* トラック間の余白を追加 */
+    margin-top: 5px;
+    /* トラック間の余白を追加 */
 }
 
 button {
     width: 40px;
     height: 40px;
     border: none;
-    background-color: #ddddddaf; /* ボタンの背景色 */
+    background-color: #ddddddaf;
+    /* ボタンの背景色 */
     cursor: pointer;
     transition: background-color 0.2s;
-    pointer-events: auto; /* ボタンが押せるようにする */
+    pointer-events: auto;
+    /* ボタンが押せるようにする */
 }
 
 button.step {
     width: 40px;
     height: 40px;
     border: none;
-    background-color: #ddddddaf; /* ボタンの背景色 */
+    background-color: #ddddddaf;
+    /* ボタンの背景色 */
     cursor: pointer;
     transition: background-color 0.2s;
-    pointer-events: auto; /* ボタンが押せるようにする */
+    pointer-events: auto;
+    /* ボタンが押せるようにする */
 }
 
 button.step.active {
-    background-color: #76c7c0; /* アクティブなステップの背景色 */
+    background-color: #76c7c0;
+    /* アクティブなステップの背景色 */
 }
 
 button.current {
-    background-color: #bbbbbbc0; /* 現在再生されているステップの背景色 */
+    background-color: #bbbbbbc0;
+    /* 現在再生されているステップの背景色 */
 }
 
 button.step.active.current {
-    background-color: #6ab5ae; /* アクティブかつ現在再生されているステップの背景色 */
+    background-color: #6ab5ae;
+    /* アクティブかつ現在再生されているステップの背景色 */
 }
 
 button.step:hover {
-    background-color: #bbbbbbc0; /* ホバー時の背景色 */
+    background-color: #bbbbbbc0;
+    /* ホバー時の背景色 */
 }
 
 button.step.active:hover {
-    background-color: #5aa9a8; /* アクティブなステップのホバー時の背景色 */
+    background-color: #5aa9a8;
+    /* アクティブなステップのホバー時の背景色 */
 }
 
 /* 1/16のリズムの細かさのときのステップボタンのスタイル */
 button.step.sixteenth {
-    width: 40px; /* 縦に半分の高さ */
+    width: 40px;
+    /* 縦に半分の高さ */
 }
 
 /*ここから実質使っていない*/
-#volume{
+#volume {
     -webkit-appearance: none;
     appearance: none;
     width: 0px;
@@ -220,7 +256,7 @@ button.step.sixteenth {
     transition: background 0.3s;
 }
 
-#volume::-webkit-slider-thumb{
+#volume::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 0px;
     height: 0px;
@@ -258,17 +294,21 @@ button.step.sixteenth {
     transition: background 0.3s;
 }
 
-#volume:hover, #bpm:hover {
+#volume:hover,
+#bpm:hover {
     background: #ccc;
 }
 
-#volume::-webkit-slider-thumb:hover, #bpm::-webkit-slider-thumb:hover {
+#volume::-webkit-slider-thumb:hover,
+#bpm::-webkit-slider-thumb:hover {
     background: #5aa9a8;
 }
 
-#volume::-moz-range-thumb:hover, #bpm::-moz-range-thumb:hover {
+#volume::-moz-range-thumb:hover,
+#bpm::-moz-range-thumb:hover {
     background: #5aa9a8;
 }
+
 /*ここまでは実質使っていない*/
 
 
@@ -277,13 +317,18 @@ button.step.sixteenth {
     appearance: none;
     width: 40px;
     height: 40px;
-    background: conic-gradient(#76c7c0 calc(var(--value) *  100%), #ddddddaf 0); /* 円周を塗る */
+    background: conic-gradient(#76c7c0 calc(var(--value) * 100%), #ddddddaf 0);
+    /* 円周を塗る */
     border-radius: 50%;
     outline: none;
-    transform: rotate(-90deg); /* 横向きに回転 */
-    margin-right: 10px; /* トラックボタンとの間に余白を追加 */
-    --value: 0.6; /* 初期値を設定 */
-    position: relative; /* 相対位置を設定 */
+    transform: rotate(-90deg);
+    /* 横向きに回転 */
+    margin: 0;
+    /* 余白を0にリセット */
+    --value: 0.6;
+    /* 初期値を設定 */
+    position: relative;
+    /* 相対位置を設定 */
 }
 
 .volume-control::after {
@@ -291,9 +336,11 @@ button.step.sixteenth {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 20px; /* 白い円のサイズ */
+    width: 20px;
+    /* 白い円のサイズ */
     height: 20px;
-    background: #f0f0f0; /* 白い円の背景色 */
+    background: #f0f0f0;
+    /* 白い円の背景色 */
     border-radius: 50%;
     transform: translate(-50%, -50%);
 }
@@ -301,12 +348,14 @@ button.step.sixteenth {
 .volume-control::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 0; /* スライダーのつまみを非表示に */
+    width: 0;
+    /* スライダーのつまみを非表示に */
     height: 0;
 }
 
 .volume-control::-moz-range-thumb {
-    width: 0; /* スライダーのつまみを非表示に */
+    width: 0;
+    /* スライダーのつまみを非表示に */
     height: 0;
 }
 
@@ -314,45 +363,54 @@ button.step.sixteenth {
     -webkit-appearance: none;
     appearance: none;
     width: 40px;
-    height: 20px; /* 高さを小さくしてトグルスイッチのように */
-    background: #ddddddaf;
-    border-radius: 10px; /* 丸みを帯びた角に */
+    height: 40px;
+    /* ボリュームと同じサイズに */
+    background: conic-gradient(#76c7c0 calc(var(--value) * 100%), #ddddddaf 0);
+    /* 円周をダークシア色で塗る */
+    border-radius: 50%;
     outline: none;
+    transform: rotate(-90deg);
+    /* 12時の位置から開始するように回転 */
+    margin: 0;
+    --value: 0.5;
+    /* 初期値を中央に設定 */
     position: relative;
-    margin-right: 0px; /* 音量調節バーとの間に余白を追加 */
-    --value: 0.5; /* 初期値を中央に設定 */
+    /* 相対位置を設定 */
     cursor: pointer;
     transition: background 0.3s;
-    transform: rotate(270deg); /* 90度回転 */
 }
 
-.pitch-bend-control::before {
+.pitch-bend-control::after {
     content: '';
     position: absolute;
     top: 50%;
-    left: calc(var(--value) * 50% + 25%); /* つまみの動く範囲を狭める */
-    width: 18px; /* トグルスイッチのつまみのサイズ */
-    height: 18px;
-    background: #76c7c0;
+    left: 50%;
+    width: 20px;
+    /* 白い内円のサイズ */
+    height: 20px;
+    background: #f0f0f0;
+    /* 内円の背景色 */
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    transition: left 0.3s;
 }
 
 .pitch-bend-control::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 0; /* つまみを非表示に */
+    width: 0;
+    /* スライダーのつまみを非表示に */
     height: 0;
 }
 
 .pitch-bend-control::-moz-range-thumb {
-    width: 0; /* つまみを非表示に */
+    width: 0;
+    /* スライダーのつまみを非表示に */
     height: 0;
 }
 
 #play {
-    background-color: #76c7c0; /* 再生ボタンの背景色 */
+    background-color: #76c7c0;
+    /* 再生ボタンの背景色 */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -362,46 +420,66 @@ button.step.sixteenth {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 100px; /* ボタンに余白を追加 */
-    position: relative; /* 擬似要素のために相対位置を設定 */
+    margin-bottom: 100px;
+    /* ボタンに余白を追加 */
+    position: relative;
+    /* 擬似要素のために相対位置を設定 */
     margin-right: 40px;
-    background-image: url('sample/play.png'); /* 再生ボタンの背景画像 */
-    background-size: 75%; /* 背景画像のサイズ */
-    opacity: 0.8; /* 透明度を設定 */
-    background-repeat: no-repeat; /* 背景画像の繰り返しを防ぐ */
-    background-position: center; /* 背景画像を中央に配置 */
+    background-image: url('sample/play.png');
+    /* 再生ボタンの背景画像 */
+    background-size: 75%;
+    /* 背景画像のサイズ */
+    opacity: 0.8;
+    /* 透明度を設定 */
+    background-repeat: no-repeat;
+    /* 背景画像の繰り返しを防ぐ */
+    background-position: center;
+    /* 背景画像を中央に配置 */
 }
 
 #play:hover {
-    background-color: #60a29c; /* ホバー時の背景色 */
+    background-color: #60a29c;
+    /* ホバー時の背景色 */
 }
 
 #play.playing {
-    background-color: #ddddddaf; /* 停止ボタンの背景色 */
-    background-image: url('sample/stop.png'); /* 停止ボタンの背景画像 */
+    background-color: #ddddddaf;
+    /* 停止ボタンの背景色 */
+    background-image: url('sample/stop.png');
+    /* 停止ボタンの背景画像 */
 }
 
 #play.playing:hover {
-    background-color: #bbbbbbc0; /* ホバー時の背景色 */
+    background-color: #bbbbbbc0;
+    /* ホバー時の背景色 */
 }
 
 /*ここからは実質使っていない*/
-#volume-container, #bpm-container {
+#volume-container,
+#bpm-container {
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* 左寄せに変更 */
-    gap: 10px; /* ラベルとバーの間に余白を追加 */
-    margin-bottom: 20px; /* ボリュームバーとBPMバーに余白を追加 */
+    justify-content: flex-start;
+    /* 左寄せに変更 */
+    gap: 10px;
+    /* ラベルとバーの間に余白を追加 */
+    margin-bottom: 20px;
+    /* ボリュームバーとBPMバーに余白を追加 */
 }
 
-#volume-container label, #bpm-container label {
-    color: #6b6a6a; /* ラベルの文字色を灰色に変更 */
+#volume-container label,
+#bpm-container label {
+    color: #6b6a6a;
+    /* ラベルの文字色を灰色に変更 */
 }
+
 /*ここまでは実質使っていない*/
 
 .record-button {
-    position: relative; /* 擬似要素のために相対位置を設定 */
-    background-color: #76c7c0; /* 録音ボタンの背景色 */
+    position: relative;
+    /* 擬似要素のために相対位置を設定 */
+    background-color: #76c7c0;
+    /* 録音ボタンの背景色 */
     color: white;
     border: none;
     padding: 5px 10px;
@@ -418,30 +496,42 @@ button.step.sixteenth {
     width: 100%;
     height: 100%;
     background-image: url('sample/rec.png');
-    background-size: 60%; /* 背景画像をボタンのサイズの80%に縮小 */
-    background-repeat: no-repeat; /* 画像の繰り返しを防ぐ */
-    background-position: center; /* 画像を中央に配置 */
-    opacity: 0.7; /* 透明度を設定 */
-    pointer-events: none; /* 擬似要素がクリックを妨げないようにする */
+    background-size: 60%;
+    /* 背景画像をボタンのサイズの80%に縮小 */
+    background-repeat: no-repeat;
+    /* 画像の繰り返しを防ぐ */
+    background-position: center;
+    /* 画像を中央に配置 */
+    opacity: 0.7;
+    /* 透明度を設定 */
+    pointer-events: none;
+    /* 擬似要素がクリックを妨げないようにする */
 }
 
 .record-button:hover {
-    background-color: #60a29cb1; /* ホバー時の背景色 */
+    background-color: #60a29cb1;
+    /* ホバー時の背景色 */
 }
 
 .record-button.recording {
-    background-color: #fdfdfdcb; /* 録音中の背景色 */
+    background-color: #fdfdfdcb;
+    /* 録音中の背景色 */
     position: relative;
     overflow: hidden;
     background-image: url('sample/rec.png');
-    background-size: 60%; /* 背景画像をボタンのサイズの80%に縮小 */
-    background-repeat: no-repeat; /* 画像の繰り返しを防ぐ */
-    background-position: center; /* 画像を中央に配置 */
-    opacity: 0.7; /* 透明度を設定 */
+    background-size: 60%;
+    /* 背景画像をボタンのサイズの80%に縮小 */
+    background-repeat: no-repeat;
+    /* 画像の繰り返しを防ぐ */
+    background-position: center;
+    /* 画像を中央に配置 */
+    opacity: 0.7;
+    /* 透明度を設定 */
 }
 
 .record-button.recording::before {
-    display: none; /* 録音中は背景画像を非表示に */
+    display: none;
+    /* 録音中は背景画像を非表示に */
 }
 
 .record-button.recording::after {
@@ -451,14 +541,17 @@ button.step.sixteenth {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.2); /* 濃く塗る色 */
-    animation: fill var(--fill-duration) linear forwards; /* アニメーションの時間を変数で設定 */
+    background-color: rgba(0, 0, 0, 0.2);
+    /* 濃く塗る色 */
+    animation: fill var(--fill-duration) linear forwards;
+    /* アニメーションの時間を変数で設定 */
 }
 
 @keyframes fill {
     from {
         height: 0;
     }
+
     to {
         height: 100%;
     }
@@ -473,7 +566,8 @@ button.step.sixteenth {
     border-radius: 5px;
     outline: none;
     transition: background 0.3s;
-    margin-left: 10px; /* トラックボタンとの間に余白を追加 */
+    margin-left: 10px;
+    /* トラックボタンとの間に余白を追加 */
 }
 
 .offset-control::-webkit-slider-thumb {
@@ -516,7 +610,8 @@ button.step.sixteenth {
     border-radius: 5px;
     outline: none;
     transition: background 0.3s;
-    margin-left: 10px; /* トラックボタンとの間に余白を追加 */
+    margin-left: 10px;
+    /* トラックボタンとの間に余白を追加 */
 }
 
 .end-offset-control::-webkit-slider-thumb {
@@ -562,11 +657,13 @@ button.step.sixteenth {
     height: 40px;
     background-color: #f4f4f4;
     border: 1px solid #ddd;
-    margin-left: 10px; /* トラックボタンとの間に余白を追加 */
+    margin-left: 10px;
+    /* トラックボタンとの間に余白を追加 */
     position: relative;
 }
 
-.offset-handle, .end-offset-handle {
+.offset-handle,
+.end-offset-handle {
     position: absolute;
     width: 3px;
     height: 100%;
@@ -585,7 +682,7 @@ button.step.sixteenth {
     margin-left: 10px;
 }
 
-.offset-handle::before{
+.offset-handle::before {
     content: '▶︎';
     position: absolute;
     color: #76c7c0;
@@ -613,7 +710,8 @@ button.step.sixteenth {
     right: -10px;
 }
 
-.offset-overlay, .end-offset-overlay {
+.offset-overlay,
+.end-offset-overlay {
     position: absolute;
     height: 100%;
     background-color: #b8b8b87c;
@@ -630,7 +728,8 @@ button.step.sixteenth {
 }
 
 .export-button {
-    background-color: #76c7c000; /* エクスポートボタンの背景色 */
+    background-color: #76c7c000;
+    /* エクスポートボタンの背景色 */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -640,24 +739,35 @@ button.step.sixteenth {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 0px; /* ボタンに余白を追加 */
-    position: relative; /* 擬似要素のために相対位置を設定 */
-    background-image: url('sample/export.png'); /* エクスポートボタンの背景画像 */
-    background-size: 50%; /* 背景画像のサイズ */
-    opacity: 0.8; /* 透明度を設定 */
-    background-repeat: no-repeat; /* 背景画像の繰り返しを防ぐ */
-    background-position: center; /* 背景画像を中央に配置 */
+    margin-top: 0px;
+    /* ボタンに余白を追加 */
+    position: relative;
+    /* 擬似要素のために相対位置を設定 */
+    background-image: url('sample/export.png');
+    /* エクスポートボタンの背景画像 */
+    background-size: 50%;
+    /* 背景画像のサイズ */
+    opacity: 0.8;
+    /* 透明度を設定 */
+    background-repeat: no-repeat;
+    /* 背景画像の繰り返しを防ぐ */
+    background-position: center;
+    /* 背景画像を中央に配置 */
 }
+
 .export-button:hover {
-    background-color: #60a29c00; /* ホバー時の背景色 */
+    background-color: #60a29c00;
+    /* ホバー時の背景色 */
 }
 
 #export {
     position: absolute;
-    right: 20px; /* ヘッダの右端に配置 */
+    right: 20px;
+    /* ヘッダの右端に配置 */
     top: 50%;
     transform: translateY(-50%);
-    background-color: #76c7c000; /* エクスポートボタンの背景色 */
+    background-color: #76c7c000;
+    /* エクスポートボタンの背景色 */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -667,27 +777,45 @@ button.step.sixteenth {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: url('sample/export.png'); /* エクスポートボタンの背景画像 */
-    background-size: 50%; /* 背景画像のサイズ */
-    opacity: 0.8; /* 透明度を設定 */
-    background-repeat: no-repeat; /* 背景画像の繰り返しを防ぐ */
-    background-position: center; /* 背景画像を中央に配置 */
+    background-image: url('sample/export.png');
+    /* エクスポートボタンの背景画像 */
+    background-size: 50%;
+    /* 背景画像のサイズ */
+    opacity: 0.8;
+    /* 透明度を設定 */
+    background-repeat: no-repeat;
+    /* 背景画像の繰り返しを防ぐ */
+    background-position: center;
+    /* 背景画像を中央に配置 */
 }
+
 #export:hover {
-    background-color: #60a29c00; /* ホバー時の背景色 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* ホバー時の影 */
+    background-color: #60a29c00;
+    /* ホバー時の背景色 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* ホバー時の影 */
 }
+
 #export.exporting {
-    background-color: #dedede; /* エクスポート中の背景色 */
-    background-image: url('sample/export.png'); /* エクスポート中の背景画像 */
-    background-size: 50%; /* 背景画像をボタンのサイズの80%に縮小 */
-    background-repeat: no-repeat; /* 画像の繰り返しを防ぐ */
-    background-position: center; /* 画像を中央に配置 */
-    opacity: 0.7; /* 透明度を設定 */
+    background-color: #dedede;
+    /* エクスポート中の背景色 */
+    background-image: url('sample/export.png');
+    /* エクスポート中の背景画像 */
+    background-size: 50%;
+    /* 背景画像をボタンのサイズの80%に縮小 */
+    background-repeat: no-repeat;
+    /* 画像の繰り返しを防ぐ */
+    background-position: center;
+    /* 画像を中央に配置 */
+    opacity: 0.7;
+    /* 透明度を設定 */
 }
+
 #export.exporting::before {
-    display: none; /* エクスポート中は背景画像を非表示に */
+    display: none;
+    /* エクスポート中は背景画像を非表示に */
 }
+
 #export.exporting::after {
     content: '';
     position: absolute;
@@ -695,8 +823,10 @@ button.step.sixteenth {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.2); /* 濃く塗る色 */
-    animation: fill var(--fill-duration) linear forwards; /* アニメーションの時間を変数で設定 */
+    background-color: rgba(0, 0, 0, 0.2);
+    /* 濃く塗る色 */
+    animation: fill var(--fill-duration) linear forwards;
+    /* アニメーションの時間を変数で設定 */
 }
 
 .mute-button {
@@ -705,21 +835,112 @@ button.step.sixteenth {
     background-color: #76c7c0;
     border: none;
     cursor: pointer;
-    margin-right: 10px; /* ボリュームコントロールとの間に余白を追加 */
-    /*background-image: url('sample/mute.png'); /* ミュートボタンの背景画像 */
-    background-size: 75%; /* 背景画像のサイズ */
-    background-repeat: no-repeat; /* 背景画像の繰り返しを防ぐ */
-    background-position: center; /* 背景画像を中央に配置 */
-    opacity: 0.8; /* 透明度を設定 */
+    margin-right: 10px;
+    /* ボリュームコントロールとの間に余白を追加 */
+    border-radius: 4px;
+    /* 角を少し丸くする */
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+    background-size: 70%;
+    /* 背景画像のサイズ */
+    background-repeat: no-repeat;
+    /* 背景画像の繰り返しを防ぐ */
+    background-position: center;
+    /* 背景画像を中央に配置 */
+    opacity: 0.8;
+    /* 透明度を設定 */
+    transition: background-color 0.2s, opacity 0.2s;
+    position: relative;
+    /* ツールチップの親要素として相対位置に設定 */
 }
 
 .mute-button.muted {
-    background-color: #ddddddaf; /* ミュート状態の背景色 */
-    /*background-image: url('sample/unmute.png'); /* ミュート解除ボタンの背景画像 */
+    background-color: #ddddddaf;
+    /* ミュート状態の背景色 */
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666666'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
 }
 
 .mute-button:hover {
-    background-color: #bbb; /* ホバー時の背景色 */
+    background-color: #bbb;
+    /* ホバー時の背景色 */
+    opacity: 1;
+}
+
+/* コントロールラッパーの配置と余白設定 */
+.control-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.volume-wrapper {
+    margin-right: 10px;
+    /* ボリュームコントロールの右側の余白をラッパーに適用 */
+}
+
+/* カスタムツールチップ（テキスト部分） - サイト全体のカラーパレットにマッチしたプレミアムなデザイン */
+.has-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    /* コントロールの上部から少し離す */
+    left: 50%;
+    transform: translate(-50%, 4px) scale(0.9);
+    background: linear-gradient(135deg, rgba(118, 199, 192, 0.98), rgba(76, 161, 175, 0.98));
+    /* ヘッダーと調和する美しいグラデーション */
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: 'M PLUS 1p', sans-serif;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    transition-delay: 0.05s;
+    /* 非常に短い遅延でスッキリ表示 */
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(76, 161, 175, 0.3);
+    /* ソフトな青緑色の影 */
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    /* 磨りガラス風の極細ボーダー */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* カスタムツールチップの矢印部分 */
+.has-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    border-width: 4px;
+    border-style: solid;
+    border-color: rgba(76, 161, 175, 0.98) transparent transparent transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    transition-delay: 0.05s;
+    z-index: 100;
+}
+
+/* ホバー時にツールチップを即時表示 */
+.has-tooltip:hover::after {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+}
+
+.has-tooltip:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* 無効化（disabled）状態の時はツールチップを非表示にする */
+.has-tooltip:disabled::after,
+.has-tooltip:disabled::before {
+    display: none !important;
 }
 
 .visualizer {
@@ -742,7 +963,9 @@ button.step.sixteenth {
 
 /* Google Chrome用のスタイル */
 @media screen and (-webkit-min-device-pixel-ratio:0) {
-    .visualizer, .spectrum {
+
+    .visualizer,
+    .spectrum {
         width: 275px;
         height: 120px;
     }
@@ -791,13 +1014,16 @@ nav ul li a:hover {
 
 .about-body {
     font-family: 'M PLUS 1p', sans-serif;
-    background-color: #f4f4f4; /* 背景色 */
+    background-color: #f4f4f4;
+    /* 背景色 */
 }
 
 .separator {
     width: 100%;
-    border-bottom: 0.5px solid #ccc; /* 薡い灰色の線 */
-    margin: 0px 0; /* 上下の余白を追加 */
+    border-bottom: 0.5px solid #ccc;
+    /* 薡い灰色の線 */
+    margin: 0px 0;
+    /* 上下の余白を追加 */
 }
 
 .about-main {
@@ -808,13 +1034,17 @@ nav ul li a:hover {
     padding: 20px;
 }
 
-.about-left, .about-right {
+.about-left,
+.about-right {
     width: 100%;
     background-color: #ffffff;
     padding: 20px 30px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* ボックスシャドウを追加 */
-    border-radius: 10px; /* 角を丸くする */
-    box-sizing: border-box; /* パディングを含めて幅を計算 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* ボックスシャドウを追加 */
+    border-radius: 10px;
+    /* 角を丸くする */
+    box-sizing: border-box;
+    /* パディングを含めて幅を計算 */
 }
 
 .about-left {
@@ -832,13 +1062,15 @@ nav ul li a:hover {
 }
 
 .about-right {
-    overflow-y: auto; /* 縦スクロールを許可 */
+    overflow-y: auto;
+    /* 縦スクロールを許可 */
 }
 
 .about-footer {
     width: 100%;
     background: linear-gradient(90deg, #76c7c0, #4ca1af);
-    color: rgba(250, 250, 250, 0.959); /* フッタの文字色 */
+    color: rgba(250, 250, 250, 0.959);
+    /* フッタの文字色 */
     font-family: 'M PLUS 1p', sans-serif;
     padding: 10px 0;
     text-align: center;
@@ -855,7 +1087,8 @@ nav ul li a:hover {
 
 .dropdown {
     position: absolute;
-    right: 68px; /* bpmとエクスポートボタンの間に配置 */
+    right: 68px;
+    /* bpmとエクスポートボタンの間に配置 */
     top: 50%;
     transform: translateY(-50%);
 }
@@ -875,7 +1108,8 @@ nav ul li a:hover {
 
 .dropbtn:hover {
     background-color: #60a29c00;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* ホバー時の影 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* ホバー時の影 */
 }
 
 .dropdown-content {
@@ -883,7 +1117,7 @@ nav ul li a:hover {
     position: absolute;
     background-color: #f9f9f9;
     min-width: 40px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
 }
 
@@ -948,7 +1182,8 @@ nav ul li a:hover {
         margin-left: 0;
     }
 
-    .visualizer, .spectrum {
+    .visualizer,
+    .spectrum {
         width: 100%;
         height: 100px;
     }
@@ -964,7 +1199,8 @@ nav ul li a:hover {
         gap: 10px;
     }
 
-    .about-left, .about-right {
+    .about-left,
+    .about-right {
         width: 100%;
         padding: 10px;
     }

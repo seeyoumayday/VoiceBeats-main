@@ -395,26 +395,42 @@ function updateStepButtons() {
 
 // Track settings inputs initialization and updates
 tracks.forEach(track => {
-    // Set initial input display variables
+    // Set initial input display variables and tooltips
     track.volumeControl.style.setProperty('--value', track.volumeControl.value);
     track.pitchBendControl.style.setProperty('--value', track.pitchBendControl.value);
+
+    const updateVolumeTooltip = (val) => {
+        const pct = Math.round(val * 100);
+        track.volumeControl.parentElement.setAttribute("data-tooltip", `音量: ${pct}%`);
+    };
+    const updatePitchTooltip = (val) => {
+        const speed = (val * 2).toFixed(2);
+        track.pitchBendControl.parentElement.setAttribute("data-tooltip", `ピッチ: x${speed}`);
+    };
+
+    updateVolumeTooltip(track.volumeControl.value);
+    updatePitchTooltip(track.pitchBendControl.value);
 
     // Track volume slider
     track.volumeControl.addEventListener("input", (event) => {
         const val = event.target.value;
         event.target.style.setProperty('--value', val);
+        updateVolumeTooltip(val);
         updateTrackMute(track);
     });
 
     // Track pitch slider
     track.pitchBendControl.addEventListener("input", (event) => {
-        event.target.style.setProperty('--value', event.target.value);
+        const val = event.target.value;
+        event.target.style.setProperty('--value', val);
+        updatePitchTooltip(val);
     });
 
     // Mute button click
     track.muteButton.addEventListener("click", () => {
         track.isMuted = !track.isMuted;
         track.muteButton.classList.toggle("muted", track.isMuted);
+        track.muteButton.setAttribute("data-tooltip", track.isMuted ? "ミュート解除" : "ミュート");
         updateTrackMute(track);
     });
 
@@ -626,13 +642,17 @@ tracks.forEach(track => {
                     });
 
                     // Restore recording buttons UI state
-                    tracks.forEach(t => t.recordButton.disabled = false);
+                    tracks.forEach(t => {
+                        t.recordButton.disabled = false;
+                        t.recordButton.setAttribute("data-tooltip", "録音");
+                    });
                     track.recordButton.classList.remove("recording");
                     track.recordButton.style.backgroundImage = "url('sample/rec.png')";
                 };
 
                 mediaRecorder.start();
                 track.recordButton.classList.add("recording");
+                track.recordButton.setAttribute("data-tooltip", "録音中");
                 track.recordButton.style.backgroundImage = "url('sample/rec.png')";
 
                 // Compute recording animation length from BPM (exactly 4 beats time limit)
