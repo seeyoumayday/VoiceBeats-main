@@ -1,41 +1,280 @@
-const steps = document.querySelectorAll(".step"); // ステップボタンを取得
-const kickSteps = document.querySelectorAll(".kick .step"); // キックステップボタンを取得
-const snareSteps = document.querySelectorAll(".snare .step"); // スネアステップボタンを取得
-const hihatSteps = document.querySelectorAll(".hihat .step"); // ハイハットステップボタンを取得
-const clapSteps = document.querySelectorAll(".clap .step"); // クラップステップボタンを取得
-const bellSteps = document.querySelectorAll(".bell .step"); // ベルステップボタンを取得
-const playButton = document.getElementById("play"); // 再生ボタンを取得
-const volumeControl = document.getElementById("volume"); // 音量バーを取得
-const bpmControl = document.getElementById("bpm"); // BPMバーを取得
-const bpmDisplay = document.getElementById("bpm-display"); // BPM表示を取得
-const trackVolumes = document.querySelectorAll(".volume-control"); // 各トラックの音量調節バーを取得
-const pitchBendControls = document.querySelectorAll(".pitch-bend-control"); // 各トラックのピッチベンド調節バーを取得
-const recordButtons = document.querySelectorAll(".record-button"); // !ボタンを取得
-const offsetControls = document.querySelectorAll(".offset-control"); // オフセット調節バーを取得
-const endOffsetControls = document.querySelectorAll(".end-offset-control"); // 終了位置調節バーを取得
-const exportButton = document.getElementById("export"); // エクスポートボタンを取得
-const muteButtons = document.querySelectorAll(".mute-button"); // ミュートボタンを取得
+// ============================================================================
+// Voice Beats - Refactored Main Script (ES Modules)
+// ============================================================================
 
+// --- DOM elements ---
+const playButton = document.getElementById("play");
+const bpmControl = document.getElementById("bpm");
+const bpmDisplay = document.getElementById("bpm-display");
+const exportButton = document.getElementById("export");
 const dropdownLinks = document.querySelectorAll(".dropdown-content a");
 const dropbtn = document.querySelector(".dropbtn");
+const canvas = document.getElementById("visualizer");
+const canvasCtx = canvas.getContext("2d");
+const spectrumCanvas = document.getElementById("spectrum");
+const spectrumCtx = spectrumCanvas.getContext("2d");
 
-let rhythmPrecision = "1/8"; // デフォルトのリズムの細かさ
-let stepsPerBeat = 8; // デフォルトのステップ数
-let intervalMultiplier = 1; // デフォルトのインターバル倍率
+// --- Track Configuration & Initializer ---
+const TRACK_DATA = [
+    { id: 'kick', class: 'kick', defaultUrl: 'sounds/kick.wav', waveformId: 'kick-waveform' },
+    { id: 'snare', class: 'snare', defaultUrl: 'sounds/snare.wav', waveformId: 'snare-waveform' },
+    { id: 'clap', class: 'clap', defaultUrl: 'sounds/clap.wav', waveformId: 'clap-waveform' },
+    { id: 'hihat', class: 'hihat', defaultUrl: 'sounds/hihat.wav', waveformId: 'hihat-waveform' },
+    { id: 'bell', class: 'bell', defaultUrl: 'sounds/bell.wav', waveformId: 'bell-waveform' }
+];
 
-// ドロップダウンメニューのリンクをクリックしたときにリズムの細かさを変更
+const tracks = TRACK_DATA.map((data, index) => {
+    const container = document.querySelector(`.track.${data.class}`);
+    if (!container) {
+        console.error(`Track container not found for: ${data.class}`);
+    }
+    return {
+        id: data.id,
+        index: index,
+        defaultUrl: data.defaultUrl,
+        waveformId: data.waveformId,
+        container: container,
+        buffer: null,
+        
+        // DOM Elements
+        steps: container.querySelectorAll('.step'),
+        pitchBendControl: container.querySelector('.pitch-bend-control'),
+        volumeControl: container.querySelector('.volume-control'),
+        muteButton: container.querySelector('.mute-button'),
+        recordButton: container.querySelector('.record-button'),
+        offsetControl: container.querySelector('.offset-control'),
+        endOffsetControl: container.querySelector('.end-offset-control'),
+        waveformCanvas: container.querySelector('.waveform'),
+        offsetHandle: container.querySelector('.offset-handle'),
+        endOffsetHandle: container.querySelector('.end-offset-handle'),
+        offsetOverlay: container.querySelector('.offset-overlay'),
+        endOffsetOverlay: container.querySelector('.end-offset-overlay'),
+        
+        // Audio graph properties (initialized dynamically)
+        gainNode: null,
+        
+        // States
+        isMuted: false
+    };
+});
+
+// Get a flat collection of all step buttons for easy visual updates
+const allSteps = document.querySelectorAll(".step");
+
+// --- Global Audio & Playback States ---
+let audioContext = null;
+let masterGainNode = null;
+
+let rhythmPrecision = "1/8";
+let stepsPerBeat = 8;
+let intervalMultiplier = 1;
+
+let schedulerTimerId = null;
+const lookahead = 25.0;            // How frequently to poll (ms)
+const scheduleAheadTime = 0.1;    // How far ahead to schedule audio (seconds)
+let nextNoteTime = 0.0;           // When the next step is due
+let currentStep = 0;              // Current sequencer step
+
+// --- Visualizer & Spectrum Analysers ---
+let visualizerAnalyser = null;
+let visualizerDataArray = null;
+
+let spectrumAnalyser = null;
+let spectrumDataArray = null;
+
+// --- Recording & Export States ---
+let mediaRecorder = null;
+let recordedChunks = [];
+
+let isExporting = false;
+let exportStepCount = 0;
+let exportRecorder = null;
+let exportChunks = [];
+
+// ============================================================================
+// Audio Graph & Buffer Setup
+// ============================================================================
+
+/**
+ * Initializes the AudioContext, persistent track GainNodes, and Analysers.
+ * Safe to call multiple times (idempotent).
+ */
+function initAudio() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        masterGainNode = audioContext.createGain();
+        masterGainNode.connect(audioContext.destination);
+
+        // Initialize persistent Audio Graph for each track
+        tracks.forEach(track => {
+            track.gainNode = audioContext.createGain();
+            // Set initial volume based on track volume control
+            const vol = track.isMuted ? 0 : parseFloat(track.volumeControl.value);
+            track.gainNode.gain.setValueAtTime(vol, audioContext.currentTime);
+            track.gainNode.connect(masterGainNode);
+        });
+
+        // Initialize separate analysers to prevent collisions
+        setupVisualizer();
+        setupSpectrum();
+    }
+}
+
+/**
+ * Loads and decodes an audio file from a URL/Blob URL.
+ */
+function loadAudioFile(url) {
+    initAudio();
+    return fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${url}`);
+            }
+            return response.arrayBuffer();
+        })
+        .then(arrayBuffer => {
+            return audioContext.decodeAudioData(arrayBuffer);
+        })
+        .catch(error => {
+            console.error('Error loading audio file:', error);
+        });
+}
+
+/**
+ * Loads default WAV sound files for all tracks and draws their waveforms.
+ */
+function loadDefaultSounds() {
+    initAudio();
+    tracks.forEach(track => {
+        loadAudioFile(track.defaultUrl).then(buffer => {
+            if (buffer) {
+                track.buffer = buffer;
+                drawWaveform(buffer, track.waveformId);
+            }
+        });
+    });
+}
+
+// ============================================================================
+// Live Playback Engine (Look-Ahead Scheduler)
+// ============================================================================
+
+/**
+ * Plays a single drum hit scheduled at a specific audio timeline position.
+ */
+function playSound(track, time) {
+    if (!audioContext || !track.buffer || track.isMuted) return;
+
+    const source = audioContext.createBufferSource();
+    source.buffer = track.buffer;
+
+    // Pitch: Map pitch control value (0.0 - 1.0, default 0.5) to speed multiplier (0.0 - 2.0)
+    const pitch = parseFloat(track.pitchBendControl.value);
+    source.playbackRate.setValueAtTime(pitch * 2, time);
+
+    // Connect source to the track's persistent GainNode
+    source.connect(track.gainNode);
+
+    const offset = parseFloat(track.offsetControl.value) || 0;
+    const endOffset = parseFloat(track.endOffsetControl.value) || 1;
+
+    const startTime = Math.max(0, track.buffer.duration * offset);
+    const duration = Math.max(0, track.buffer.duration * (endOffset - offset));
+
+    source.start(time, startTime, duration);
+}
+
+/**
+ * The scheduling polling loop. Evaluates and schedules any beats falling
+ * within the look-ahead window.
+ */
+function scheduler() {
+    while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
+        scheduleNote(currentStep, nextNoteTime);
+        advanceNote();
+    }
+}
+
+/**
+ * Schedules sounds and schedules corresponding visual UI updates.
+ */
+function scheduleNote(stepIndex, time) {
+    tracks.forEach(track => {
+        if (track.steps[stepIndex] && track.steps[stepIndex].classList.contains("active")) {
+            playSound(track, time);
+        }
+    });
+
+    // Schedule UI highlighting at the exact moment of playback
+    const delayMs = (time - audioContext.currentTime) * 1000;
+    setTimeout(() => {
+        if (schedulerTimerId !== null || isExporting) {
+            tracks.forEach(track => {
+                track.steps.forEach(step => step.classList.remove("current"));
+                if (track.steps[stepIndex]) {
+                    track.steps[stepIndex].classList.add("current");
+                }
+            });
+        }
+    }, Math.max(0, delayMs));
+}
+
+/**
+ * Advances the current step and timeline position based on BPM.
+ */
+function advanceNote() {
+    const bpm = parseFloat(bpmControl.value) || 120;
+    const stepDuration = (30.0 / bpm) * intervalMultiplier;
+
+    nextNoteTime += stepDuration;
+    currentStep = (currentStep + 1) % stepsPerBeat;
+
+    if (isExporting) {
+        exportStepCount++;
+        if (exportStepCount >= stepsPerBeat) {
+            stopExporting();
+        }
+    }
+}
+
+// ============================================================================
+// Event Listeners & UI Operations
+// ============================================================================
+
+// Play/Pause button click
+playButton.addEventListener("click", async () => {
+    initAudio();
+    if (audioContext.state === "suspended") {
+        await audioContext.resume();
+    }
+
+    if (schedulerTimerId === null) {
+        // Start live playback
+        currentStep = 0;
+        nextNoteTime = audioContext.currentTime;
+        schedulerTimerId = setInterval(scheduler, lookahead);
+        playButton.classList.add("playing");
+    } else {
+        // Stop live playback
+        clearInterval(schedulerTimerId);
+        schedulerTimerId = null;
+        playButton.classList.remove("playing");
+        // Clear all highlight states
+        allSteps.forEach(step => step.classList.remove("current"));
+    }
+});
+
+// Rhythm precision dropdown change
 dropdownLinks.forEach(link => {
     link.addEventListener("click", (event) => {
         event.preventDefault();
-        
-        // 再生中の場合は一旦再生を停止
-        if (intervalId !== null) {
-            clearInterval(intervalId);
-            intervalId = null;
-            playButton.textContent = ""; // ボタンのテキストを変更
-            playButton.classList.remove("playing"); // ボタンのクラスを変更
-            steps.forEach(step => step.classList.remove("current")); // 再生停止時に全ステップの現在状態をクリア
-            kickSteps.forEach(step => step.classList.remove("current")); // 再生停止時に全キックステップの現在状態をクリア
+
+        // Stop live sequencer if running
+        if (schedulerTimerId !== null) {
+            clearInterval(schedulerTimerId);
+            schedulerTimerId = null;
+            playButton.classList.remove("playing");
+            allSteps.forEach(step => step.classList.remove("current"));
         }
 
         rhythmPrecision = event.target.getAttribute("data-precision");
@@ -43,16 +282,13 @@ dropdownLinks.forEach(link => {
         updateStepsAndInterval();
     });
 });
-dropdownLinks.forEach(link => {
-    link.addEventListener("click", (event) => {
-        event.preventDefault();
-        rhythmPrecision = event.target.getAttribute("data-precision");
-        dropbtn.textContent = rhythmPrecision;
-        updateStepsAndInterval();
-    });
-});
 
+/**
+ * Updates sequencer parameters based on rhythm precision settings.
+ */
 function updateStepsAndInterval() {
+    const oldStepsPerBeat = stepsPerBeat;
+
     switch (rhythmPrecision) {
         case "1/16":
             stepsPerBeat = 16;
@@ -67,14 +303,82 @@ function updateStepsAndInterval() {
             intervalMultiplier = 1;
             break;
     }
+
+    if (oldStepsPerBeat !== stepsPerBeat) {
+        convertTrackStepsState(oldStepsPerBeat, stepsPerBeat);
+    }
+
     updateStepButtons();
 }
 
+/**
+ * Maps the active step states when rhythm precision changes to preserve rhythm timing.
+ */
+function convertTrackStepsState(oldSteps, newSteps) {
+    tracks.forEach(track => {
+        // 1. Extract the active states of the previous steps
+        const oldStates = [];
+        for (let i = 0; i < oldSteps; i++) {
+            oldStates.push(track.steps[i].classList.contains("active"));
+        }
+        
+        // 2. Compute the new active states using beat-aligned mapping
+        const newStates = new Array(newSteps).fill(false);
+        
+        if (oldSteps === 8 && newSteps === 16) {
+            for (let i = 0; i < 8; i++) {
+                newStates[2 * i] = oldStates[i];
+            }
+        } else if (oldSteps === 16 && newSteps === 8) {
+            for (let i = 0; i < 8; i++) {
+                newStates[i] = oldStates[2 * i];
+            }
+        } else if (oldSteps === 8 && newSteps === 12) {
+            for (let b = 0; b < 4; b++) {
+                newStates[3 * b] = oldStates[2 * b];
+                newStates[3 * b + 2] = oldStates[2 * b + 1];
+            }
+        } else if (oldSteps === 12 && newSteps === 8) {
+            for (let b = 0; b < 4; b++) {
+                newStates[2 * b] = oldStates[3 * b];
+                newStates[2 * b + 1] = oldStates[3 * b + 1] || oldStates[3 * b + 2];
+            }
+        } else if (oldSteps === 12 && newSteps === 16) {
+            for (let b = 0; b < 4; b++) {
+                newStates[4 * b] = oldStates[3 * b];
+                newStates[4 * b + 1] = oldStates[3 * b + 1];
+                newStates[4 * b + 3] = oldStates[3 * b + 2];
+            }
+        } else if (oldSteps === 16 && newSteps === 12) {
+            for (let b = 0; b < 4; b++) {
+                newStates[3 * b] = oldStates[4 * b];
+                newStates[3 * b + 1] = oldStates[4 * b + 1] || oldStates[4 * b + 2];
+                newStates[3 * b + 2] = oldStates[4 * b + 3];
+            }
+        }
+        
+        // 3. Apply the new states to the DOM buttons
+        track.steps.forEach((step, index) => {
+            if (index < newSteps) {
+                if (newStates[index]) {
+                    step.classList.add("active");
+                } else {
+                    step.classList.remove("active");
+                }
+            } else {
+                // Clear state for buttons that are hidden just in case
+                step.classList.remove("active");
+            }
+        });
+    });
+}
+
+/**
+ * Displays/hides step buttons in track headers to match active precision division.
+ */
 function updateStepButtons() {
-    const trackContainers = document.querySelectorAll(".track-container .track");
-    trackContainers.forEach(track => {
-        const stepButtons = track.querySelectorAll(".step");
-        stepButtons.forEach((step, index) => {
+    tracks.forEach(track => {
+        track.steps.forEach((step, index) => {
             if (index < stepsPerBeat) {
                 step.style.display = "inline-block";
                 if (rhythmPrecision === "1/16") {
@@ -89,31 +393,50 @@ function updateStepButtons() {
     });
 }
 
+// Track settings inputs initialization and updates
+tracks.forEach(track => {
+    // Set initial input display variables
+    track.volumeControl.style.setProperty('--value', track.volumeControl.value);
+    track.pitchBendControl.style.setProperty('--value', track.pitchBendControl.value);
 
-let intervalId = null; // インターバルID
-let currentStep = 0; // 現在のステップ
-let audioContext = null; // オーディオコンテキスト
-let gainNode = null; // ゲインノード
-let snareBuffer = null; // スネアドラムのオーディオバッファ
-let kickBuffer = null; // キックドラムのオーディオバッファ
-let hihatBuffer = null; // ハイハットのオーディオバッファ
-let clapBuffer = null; // クラップのオーディオバッファ
-let bellBuffer = null; // ベルのオーディオバッファ
-let mediaRecorder = null; // メディアレコーダー
-let recordedChunks = []; // !されたチャンク
-let muteStates = [false, false, false, false, false]; // 各トラックのミュート状態を管理
+    // Track volume slider
+    track.volumeControl.addEventListener("input", (event) => {
+        const val = event.target.value;
+        event.target.style.setProperty('--value', val);
+        updateTrackMute(track);
+    });
 
-let analyser = null;
-let dataArray = null;
-let bufferLength = null;
-const canvas = document.getElementById("visualizer");
-const canvasCtx = canvas.getContext("2d");
+    // Track pitch slider
+    track.pitchBendControl.addEventListener("input", (event) => {
+        event.target.style.setProperty('--value', event.target.value);
+    });
 
-let frequencyDataArray = null;
-const spectrumCanvas = document.getElementById("spectrum");
-const spectrumCtx = spectrumCanvas.getContext("2d");
+    // Mute button click
+    track.muteButton.addEventListener("click", () => {
+        track.isMuted = !track.isMuted;
+        track.muteButton.classList.toggle("muted", track.isMuted);
+        updateTrackMute(track);
+    });
 
-// BPMの値を表示
+    // Step button toggles
+    track.steps.forEach(step => {
+        step.addEventListener("click", () => {
+            step.classList.toggle("active");
+        });
+    });
+});
+
+/**
+ * Syncs track volume gain nodes with the physical volume sliders and mute state.
+ */
+function updateTrackMute(track) {
+    if (track.gainNode) {
+        const targetVolume = track.isMuted ? 0 : parseFloat(track.volumeControl.value);
+        track.gainNode.gain.setValueAtTime(targetVolume, audioContext.currentTime);
+    }
+}
+
+// BPM Slider input
 bpmControl.addEventListener("input", () => {
     bpmDisplay.textContent = `♩=${bpmControl.value}`;
     updateBpmDisplayArrows();
@@ -125,29 +448,38 @@ function updateBpmDisplayArrows() {
     bpmDisplay.classList.toggle('min', bpmValue <= 60);
 }
 
-let isDraggingBpm = false;
-let startY = 0;
-let startBpm = 0;
-
+// Drag BPM to adjust
 bpmDisplay.addEventListener("mousedown", (event) => {
-    isDraggingBpm = true;
-    startY = event.clientY;
-    startBpm = parseInt(bpmControl.value, 10);
-});
+    event.preventDefault();
+    const startY = event.clientY;
+    const startBpm = parseInt(bpmControl.value, 10);
 
-document.addEventListener("mousemove", (event) => {
-    if (isDraggingBpm) {
-        const deltaY = startY - event.clientY;
+    const onMouseMoveBpm = (moveEvent) => {
+        const deltaY = startY - moveEvent.clientY;
         const newBpm = Math.min(200, Math.max(60, startBpm + deltaY));
         bpmControl.value = newBpm;
         bpmDisplay.textContent = `♩=${newBpm}`;
-    }
-    updateBpmDisplayArrows();
+        updateBpmDisplayArrows();
+    };
+
+    const onMouseUpBpm = () => {
+        document.removeEventListener("mousemove", onMouseMoveBpm);
+        document.removeEventListener("mouseup", onMouseUpBpm);
+    };
+
+    document.addEventListener("mousemove", onMouseMoveBpm);
+    document.addEventListener("mouseup", onMouseUpBpm);
 });
 
-document.addEventListener("mouseup", () => {
-    isDraggingBpm = false;
-    updateBpmDisplayArrows();
+// Click BPM display arrows
+bpmDisplay.addEventListener("click", (event) => {
+    const rect = bpmDisplay.getBoundingClientRect();
+    const y = event.clientY - rect.top;
+    if (y < rect.height / 2) {
+        adjustBpm(1); // Clicked up arrow area
+    } else {
+        adjustBpm(-1); // Clicked down arrow area
+    }
 });
 
 function adjustBpm(amount) {
@@ -157,225 +489,26 @@ function adjustBpm(amount) {
     updateBpmDisplayArrows();
 }
 
-bpmDisplay.addEventListener("click", (event) => {
-    const rect = bpmDisplay.getBoundingClientRect();
-    const y = event.clientY - rect.top;
-    if (y < rect.height / 2) {
-        adjustBpm(1); // △をクリックした場合
-    } else {
-        adjustBpm(-1); // ▽をクリックした場合
-    }
-});
+// ============================================================================
+// Waveform Canvas Rendering & Trim Handles
+// ============================================================================
 
-// オーディオファイルをロードする関数
-function loadAudioFile(url) {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        gainNode = audioContext.createGain();
-        gainNode.connect(audioContext.destination);
-    }
-    return fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.arrayBuffer();
-        })
-        .then(arrayBuffer => {
-            return audioContext.decodeAudioData(arrayBuffer);
-        })
-        .catch(error => {
-            console.error('Error loading audio file:', error);
-        });
-}
-
-// デフォルトの音源をロードして波形を描画する関数
-function loadDefaultSounds() {
-    loadAudioFile('sounds/kick.wav').then(buffer => {
-        kickBuffer = buffer;
-        drawWaveform(buffer, "kick-waveform");
-    });
-    loadAudioFile('sounds/snare.wav').then(buffer => {
-        snareBuffer = buffer;
-        drawWaveform(buffer, "snare-waveform");
-    });
-    loadAudioFile('sounds/clap.wav').then(buffer => {
-        clapBuffer = buffer;
-        drawWaveform(buffer, "clap-waveform");
-    });
-    loadAudioFile('sounds/hihat.wav').then(buffer => {
-        hihatBuffer = buffer;
-        drawWaveform(buffer, "hihat-waveform");
-    });
-    loadAudioFile('sounds/bell.wav').then(buffer => {
-        bellBuffer = buffer;
-        drawWaveform(buffer, "bell-waveform");
-    });
-}
-
-// シンプルなサウンドを再生するための関数
-function playSound(buffer, volume, pitch, offset, endOffset, trackIndex) {
-    if (!audioContext || !buffer || muteStates[trackIndex]) return; // ミュート状態の場合は再生しない
-    const source = audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.playbackRate.setValueAtTime(pitch * 2, audioContext.currentTime); // ピッチを設定 (0.5 - 1.5 の範囲に調整)
-    const trackGainNode = audioContext.createGain();
-    trackGainNode.gain.setValueAtTime(volume, audioContext.currentTime); // トラックごとの音量を設定
-    source.connect(trackGainNode).connect(gainNode);
-    offset = offset;
-    endOffset = endOffset;
-    // console.log(`Offset: ${offset}, End Offset: ${endOffset}`);
-    const startTime = Math.max(0, buffer.duration * offset);
-    const duration = Math.max(0, buffer.duration * (endOffset - offset));
-    source.start(0, startTime, duration); // オフセットと終了位置を適用して再生開始
-}
-
-// ステップの再生
-function playSequence() {
-    snareSteps.forEach(step => step.classList.remove("current")); // 以前のスネアステップの現在状態をクリア
-    kickSteps.forEach(step => step.classList.remove("current")); // 以前のキックステップの現在状態をクリア
-    hihatSteps.forEach(step => step.classList.remove("current")); // 以前のハイハットステップの現在状態をクリア
-    clapSteps.forEach(step => step.classList.remove("current")); // 以前のクラップステップの現在状態をクリア
-    bellSteps.forEach(step => step.classList.remove("current")); // 以前のベルステップの現在状態をクリア
-
-    if (snareSteps[currentStep] && snareSteps[currentStep].classList.contains("active")) {
-        playSound(snareBuffer, trackVolumes[1].value, pitchBendControls[1].value, offsetControls[1].value, endOffsetControls[1].value, 1); // アクティブなスネアステップの場合、スネアドラムのサウンドを再生
-    }
-    if (kickSteps[currentStep] && kickSteps[currentStep].classList.contains("active")) {
-        playSound(kickBuffer, trackVolumes[0].value, pitchBendControls[0].value, offsetControls[0].value, endOffsetControls[0].value, 0); // アクティブなキックステップの場合、キックドラムのサウンドを再生
-    }
-    if (hihatSteps[currentStep] && hihatSteps[currentStep].classList.contains("active")) {
-        playSound(hihatBuffer, trackVolumes[3].value, pitchBendControls[3].value, offsetControls[3].value, endOffsetControls[3].value, 3); // アクティブなハイハットステップの場合、ハイハットのサウンドを再生
-    }
-    if (clapSteps[currentStep] && clapSteps[currentStep].classList.contains("active")) {
-        playSound(clapBuffer, trackVolumes[2].value, pitchBendControls[2].value, offsetControls[2].value, endOffsetControls[2].value, 2); // アクティブなクラップステップの場合、クラップのサウンドを再生
-    }
-    if (bellSteps[currentStep] && bellSteps[currentStep].classList.contains("active")) {
-        playSound(bellBuffer, trackVolumes[4].value, pitchBendControls[4].value, offsetControls[4].value, endOffsetControls[4].value, 4); // アクティブなベルステップの場合、ベルのサウンドを再生
-    }
-
-    if (snareSteps[currentStep]) {
-        snareSteps[currentStep].classList.add("current"); // 現在のスネアステップを現在状態に
-    }
-    if (kickSteps[currentStep]) {
-        kickSteps[currentStep].classList.add("current"); // 現在のキックステップを現在状態に
-    }
-    if (hihatSteps[currentStep]) {
-        hihatSteps[currentStep].classList.add("current"); // 現在のハイハットステップを現在状態に
-    }
-    if (clapSteps[currentStep]) {
-        clapSteps[currentStep].classList.add("current"); // 現在のクラップステップを現在状態に
-    }
-    if (bellSteps[currentStep]) {
-        bellSteps[currentStep].classList.add("current"); // 現在のベルステップを現在状態に
-    }
-
-    currentStep = (currentStep + 1) % stepsPerBeat; // 次のステップに進む
-}
-
-
-// シーケンサーの再生を開始または停止
-playButton.addEventListener("click", () => {
-    if (!audioContext) {
-        // 初めての再生時にオーディオコンテキストを初期化
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        gainNode = audioContext.createGain();
-        gainNode.connect(audioContext.destination);
-    }
-    
-    if (intervalId === null) {
-        const interval = (30000 / bpmControl.value) * intervalMultiplier; // BPMに基づいてインターバルを計算
-        intervalId = setInterval(playSequence, interval); // インターバルを設定
-        playButton.textContent = ""; // ボタンのテキストを変更
-        playButton.classList.add("playing"); // ボタンのクラスを変更
-    } else {
-        clearInterval(intervalId); // インターバルをクリア
-        intervalId = null;
-        playButton.textContent = ""; // ボタンのテキストを変更
-        playButton.classList.remove("playing"); // ボタンのクラスを変更
-        steps.forEach(step => step.classList.remove("current")); // 再生停止時に全ステップの現在状態をクリア
-        kickSteps.forEach(step => step.classList.remove("current")); // 再生停止時に全キックステップの現在状態をクリア
-    }
-});
-
-/*
-// サイト起動時にデフォルトの音源をロードして波形を描画
-window.addEventListener("load", () => {
-    loadDefaultSounds();
-});
-*/
-
-window.onload = function(){
-    updateStepButtons(); // リズムの細かさに基づいてステップボタンを更新
-    loadDefaultSounds();// ページ読み込み時に実行したい処理
-    updateBpmDisplayArrows(); // 初期表示時に矢印の色を更新
-    setupVisualizer();
-    drawVisualizer();
-    setupSpectrum();
-    drawSpectrum();
-}
-
-// ステップをクリックしたときにトグル
-snareSteps.forEach(step => {
-    step.addEventListener("click", () => {
-        step.classList.toggle("active"); // アクティブ状態をトグル
-    });
-});
-
-// キックステップをクリックしたときにトグル
-kickSteps.forEach(step => {
-    step.addEventListener("click", () => {
-        step.classList.toggle("active"); // アクティブ状態をトグル
-    });
-});
-
-// ハイハットステップをクリックしたときにトグル
-hihatSteps.forEach(step => {
-    step.addEventListener("click", () => {
-        step.classList.toggle("active"); // アクティブ状態をトグル
-    });
-});
-
-// クラップステップをクリックしたときにトグル
-clapSteps.forEach(step => {
-    step.addEventListener("click", () => {
-        step.classList.toggle("active"); // アクティブ状態をトグル
-    });
-});
-
-// ベルステップをクリックしたときにトグル
-bellSteps.forEach(step => {
-    step.addEventListener("click", () => {
-        step.classList.toggle("active"); // アクティブ状態をトグル
-    });
-});
-
-// 音量調節バーの値を変更したときにスタイルを更新
-trackVolumes.forEach(volumeControl => {
-    volumeControl.addEventListener("input", (event) => {
-        event.target.style.setProperty('--value', event.target.value);
-    });
-});
-
-// ピッチベンド調節バーの値を変更したときにスタイルを更新
-pitchBendControls.forEach(pitchBendControl => {
-    pitchBendControl.addEventListener("input", (event) => {
-        event.target.style.setProperty('--value', event.target.value);
-    });
-});
-
-// 波形を描画する関数
+/**
+ * Renders the audio buffer waveform onto a canvas.
+ */
 function drawWaveform(buffer, canvasId) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || !buffer) return;
-    const context = canvas.getContext("2d");
+    const canvasEl = document.getElementById(canvasId);
+    if (!canvasEl || !buffer) return;
+    const context = canvasEl.getContext("2d");
     const data = buffer.getChannelData(0);
-    const width = canvas.width;
-    const height = canvas.height;
+    const width = canvasEl.width;
+    const height = canvasEl.height;
+    
     context.clearRect(0, 0, width, height);
     context.fillStyle = "#76c7c0";
     const step = Math.ceil(data.length / width);
     const amp = height / 2;
+
     for (let i = 0; i < width; i++) {
         let min = 1.0;
         let max = -1.0;
@@ -388,147 +521,152 @@ function drawWaveform(buffer, canvasId) {
     }
 }
 
-// !ボタンのクリックイベントを設定
-recordButtons.forEach((button, index) => {
-    button.addEventListener("click", () => {
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-            mediaRecorder.stop(); // 録音を停止
-            button.textContent = ""; // ボタンのテキストを変更
-            button.style.backgroundImage = "url('sample/rec.png')"; // ボタンの背景画像を変更
-            button.classList.remove("recording"); // 録音中クラスを削除
-            recordButtons.forEach(btn => btn.disabled = false); // 全ての録音ボタンを有効にする
-        } else {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                console.error('getUserMedia is not supported in this browser.');
-                return;
-            }
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    mediaRecorder = new MediaRecorder(stream);
-                    mediaRecorder.ondataavailable = event => {
-                        if (event.data.size > 0) {
-                            recordedChunks.push(event.data);
-                        }
-                    };
-                    mediaRecorder.onstop = () => {
-                        const blob = new Blob(recordedChunks, { type: "audio/wav" });
-                        const url = URL.createObjectURL(blob);
-                        loadAudioFile(url).then(buffer => {
-                            switch (index) {
-                                case 0:
-                                    kickBuffer = buffer;
-                                    drawWaveform(buffer, "kick-waveform");
-                                    break;
-                                case 1:
-                                    snareBuffer = buffer;
-                                    drawWaveform(buffer, "snare-waveform");
-                                    break;
-                                case 2:
-                                    clapBuffer = buffer;
-                                    drawWaveform(buffer, "clap-waveform");
-                                    break;
-                                case 3:
-                                    hihatBuffer = buffer;
-                                    drawWaveform(buffer, "hihat-waveform");
-                                    break;
-                                case 4:
-                                    bellBuffer = buffer;
-                                    drawWaveform(buffer, "bell-waveform");
-                                    break;
-                            }
-                        });
-                        recordedChunks = [];
-                        recordButtons.forEach(btn => btn.disabled = false); // 全ての録音ボタンを有効にする
-                    };
-                    mediaRecorder.start();
-                    button.textContent = ""; // ボタンのテキストを変更
-                    button.style.backgroundImage = "url('sample/rec.png')"; // ボタンの背景画像を変更
-                    button.classList.add("recording"); // 録音中クラスを追加
-                    recordButtons.forEach(btn => btn.disabled = true); // 全ての録音ボタンを無効にする
-                    button.disabled = false; // 現在のボタンだけ有効にする
+// Bind Waveform Trim Handle dragging dynamically
+tracks.forEach(track => {
+    const offsetHandle = track.offsetHandle;
+    const endOffsetHandle = track.endOffsetHandle;
+    const offsetOverlay = track.offsetOverlay;
+    const endOffsetOverlay = track.endOffsetOverlay;
+    const waveform = track.waveformCanvas;
 
-                    // アニメーションの時間をBPMに基づいて設定
-                    const fillDuration = (30000 / bpmControl.value) * 4 / 1000; // 4ステップ分の時間を秒で計算
-                    button.style.setProperty('--fill-duration', `${fillDuration}s`);
-
-                    // 4ステップ後に録音を停止
-                    setTimeout(() => {
-                        if (mediaRecorder.state === "recording") {
-                            mediaRecorder.stop();
-                            button.textContent = ""; // ボタンのテキストを変更
-                            button.style.backgroundImage = "url('sample/rec.png')"; // ボタンの背景画像を変更
-                            button.classList.remove("recording"); // 録音中クラスを削除
-                            recordButtons.forEach(btn => btn.disabled = false); // 全ての録音ボタンを有効にする
-                        }
-                    }, (30000 / bpmControl.value) * 4); // 4ステップ分の時間を計算
-                })
-                .catch(e => console.error('Error accessing microphone:', e));
+    // Left handle (Offset Start)
+    const onMouseMoveOffset = (event) => {
+        const rect = waveform.getBoundingClientRect();
+        const offset = Math.min(Math.max(0, event.clientX - rect.left), rect.width);
+        const endOffset = parseFloat(endOffsetHandle.style.right) || 0;
+        if (offset < rect.width - endOffset - 5) {
+            offsetHandle.style.left = `${offset}px`;
+            offsetOverlay.style.width = `${offset}px`;
+            track.offsetControl.value = offset / rect.width;
         }
-    });
-});
+    };
 
-const waveformContainers = document.querySelectorAll(".waveform-container");
+    const onMouseUpOffset = () => {
+        document.removeEventListener("mousemove", onMouseMoveOffset);
+        document.removeEventListener("mouseup", onMouseUpOffset);
+    };
 
-waveformContainers.forEach((container, index) => {
-    const offsetHandle = container.querySelector(".offset-handle");
-    const endOffsetHandle = container.querySelector(".end-offset-handle");
-    const offsetOverlay = container.querySelector(".offset-overlay");
-    const endOffsetOverlay = container.querySelector(".end-offset-overlay");
-    const waveform = container.querySelector(".waveform");
-
-    let isDraggingOffset = false;
-    let isDraggingEndOffset = false;
-
-    const startDraggingOffset = () => isDraggingOffset = true;
-    const startDraggingEndOffset = () => isDraggingEndOffset = true;
-
-    offsetHandle.addEventListener("mousedown", startDraggingOffset);
-    endOffsetHandle.addEventListener("mousedown", startDraggingEndOffset);
-
-    // Add event listeners to the arrow symbols
     offsetHandle.addEventListener("mousedown", (event) => {
-        if (event.target === offsetHandle) {
-            startDraggingOffset();
-        }
+        event.preventDefault();
+        document.addEventListener("mousemove", onMouseMoveOffset);
+        document.addEventListener("mouseup", onMouseUpOffset);
     });
+
+    // Right handle (Offset End)
+    const onMouseMoveEndOffset = (event) => {
+        const rect = waveform.getBoundingClientRect();
+        const endOffset = Math.min(Math.max(0, rect.right - event.clientX), rect.width);
+        const offset = parseFloat(offsetHandle.style.left) || 0;
+        if (endOffset < rect.width - offset - 4) {
+            endOffsetHandle.style.right = `${endOffset}px`;
+            endOffsetOverlay.style.width = `${endOffset}px`;
+            track.endOffsetControl.value = 1 - (endOffset / rect.width);
+        }
+    };
+
+    const onMouseUpEndOffset = () => {
+        document.removeEventListener("mousemove", onMouseMoveEndOffset);
+        document.removeEventListener("mouseup", onMouseUpEndOffset);
+    };
+
     endOffsetHandle.addEventListener("mousedown", (event) => {
-        if (event.target === endOffsetHandle) {
-            startDraggingEndOffset();
-        }
-    });
-
-    document.addEventListener("mouseup", () => {
-        isDraggingOffset = false;
-        isDraggingEndOffset = false;
-    });
-
-    document.addEventListener("mousemove", (event) => {
-        if (isDraggingOffset) {
-            const rect = waveform.getBoundingClientRect();
-            const offset = Math.min(Math.max(0, event.clientX - rect.left), rect.width);
-            const endOffset = parseFloat(endOffsetHandle.style.right) || 0;
-            if (offset < rect.width - endOffset - 5) {
-                offsetHandle.style.left = `${offset}px`;
-                offsetOverlay.style.width = `${offset}px`;
-                offsetControls[index].value = offset / rect.width;
-            }
-        }
-        if (isDraggingEndOffset) {
-            const rect = waveform.getBoundingClientRect();
-            const endOffset = Math.min(Math.max(0, rect.right - event.clientX), rect.width);
-            const offset = parseFloat(offsetHandle.style.left) || 0;
-            if (endOffset < rect.width - offset - 4) {
-                endOffsetHandle.style.right = `${endOffset}px`;
-                endOffsetOverlay.style.width = `${endOffset}px`;
-                endOffsetControls[index].value = 1 - (endOffset / rect.width);
-            }
-        }
+        event.preventDefault();
+        document.addEventListener("mousemove", onMouseMoveEndOffset);
+        document.addEventListener("mouseup", onMouseUpEndOffset);
     });
 });
+
+// ============================================================================
+// Voice Sampling (Mic Recording) Logic
+// ============================================================================
+
+tracks.forEach(track => {
+    track.recordButton.addEventListener("click", async () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            return;
+        }
+
+        initAudio();
+        if (audioContext.state === "suspended") {
+            await audioContext.resume();
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('マイク入力がサポートされていないブラウザです。');
+            return;
+        }
+
+        // Lock recording UI
+        tracks.forEach(t => t.recordButton.disabled = true);
+        track.recordButton.disabled = false;
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: "audio/wav" });
+                    const url = URL.createObjectURL(blob);
+
+                    loadAudioFile(url).then(buffer => {
+                        if (buffer) {
+                            track.buffer = buffer;
+                            drawWaveform(buffer, track.waveformId);
+                        }
+                        // Revoke to clean up browser memory
+                        URL.revokeObjectURL(url);
+                    });
+
+                    // Restore recording buttons UI state
+                    tracks.forEach(t => t.recordButton.disabled = false);
+                    track.recordButton.classList.remove("recording");
+                    track.recordButton.style.backgroundImage = "url('sample/rec.png')";
+                };
+
+                mediaRecorder.start();
+                track.recordButton.classList.add("recording");
+                track.recordButton.style.backgroundImage = "url('sample/rec.png')";
+
+                // Compute recording animation length from BPM (exactly 4 beats time limit)
+                const bpm = parseFloat(bpmControl.value) || 120;
+                const fillDuration = (30000 / bpm) * 4 / 1000;
+                track.recordButton.style.setProperty('--fill-duration', `${fillDuration}s`);
+
+                // Force record termination after 4 beats limit
+                setTimeout(() => {
+                    if (mediaRecorder && mediaRecorder.state === "recording") {
+                        mediaRecorder.stop();
+                    }
+                }, (30000 / bpm) * 4);
+            })
+            .catch(error => {
+                console.error('Error accessing microphone:', error);
+                alert('マイクのアクセス許可が得られませんでした。');
+                
+                // Unlock buttons if failed
+                tracks.forEach(t => t.recordButton.disabled = false);
+            });
+    });
+});
+
+// ============================================================================
+// WAV Export Logic (via ffmpeg.wasm)
+// ============================================================================
 
 async function convertWebmToWav(webmBlob) {
     const { createFFmpeg, fetchFile } = FFmpeg;
-    const ffmpeg = createFFmpeg({ log: true, corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js' });
+    const ffmpeg = createFFmpeg({
+        log: true,
+        corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js'
+    });
     await ffmpeg.load();
     ffmpeg.FS('writeFile', 'input.webm', await fetchFile(webmBlob));
     await ffmpeg.run('-i', 'input.webm', 'output.wav');
@@ -537,103 +675,122 @@ async function convertWebmToWav(webmBlob) {
     return wavBlob;
 }
 
-exportButton.addEventListener("click", () => {
-    // 再生中は一旦再生を停止
-    if (intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
-        playButton.textContent = ""; // ボタンのテキストを変更
-        playButton.classList.remove("playing"); // ボタンのクラスを変更
+exportButton.addEventListener("click", async () => {
+    // Stop live sequencer if running
+    if (schedulerTimerId !== null) {
+        clearInterval(schedulerTimerId);
+        schedulerTimerId = null;
+        playButton.classList.remove("playing");
+        allSteps.forEach(step => step.classList.remove("current"));
     }
-    // エクスポート中はエクスポートボタンを押せないようにする
+
     if (exportButton.classList.contains("exporting")) {
         return;
     }
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        gainNode = audioContext.createGain();
-        gainNode.connect(audioContext.destination);
+
+    initAudio();
+    if (audioContext.state === "suspended") {
+        await audioContext.resume();
     }
 
+    // Connect masterGainNode output to a recorder stream node
     const destination = audioContext.createMediaStreamDestination();
-    gainNode.connect(destination);
+    masterGainNode.connect(destination);
 
-    const recorder = new MediaRecorder(destination.stream);
-    const chunks = [];
+    exportRecorder = new MediaRecorder(destination.stream);
+    exportChunks = [];
 
-    recorder.ondataavailable = (event) => {
+    exportRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
-            chunks.push(event.data);
+            exportChunks.push(event.data);
         }
     };
 
-    recorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        const wavBlob = await convertWebmToWav(blob);
-        const url = URL.createObjectURL(wavBlob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = "VoiceBeats.wav";
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-    };
-
-    recorder.start();
-    exportButton.classList.add("exporting"); // エクスポート中クラスを追加
-
-    currentStep = 0; // 強制的に一番最初のステップから始める
-    steps.forEach(step => step.classList.remove("current")); // 全ステップの現在状態をクリア
-    let stepCount = 0;
-    const interval = (30000 / bpmControl.value) * intervalMultiplier; // BPMに基づいてインターバルを計算
-    const playExportSequence = () => {
-        playSequence();
-        stepCount++;
-        if (stepCount >= stepsPerBeat) {
-            clearInterval(exportIntervalId);
-            recorder.stop();
-            exportButton.classList.remove("exporting"); // エクスポート中クラスを削除
+    exportRecorder.onstop = async () => {
+        const blob = new Blob(exportChunks, { type: "audio/webm" });
+        try {
+            const wavBlob = await convertWebmToWav(blob);
+            const url = URL.createObjectURL(wavBlob);
+            const a = document.createElement("a");
+            a.style.display = "none";
+            a.href = url;
+            a.download = "VoiceBeats.wav";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("FFmpeg conversion failed:", err);
+            alert("WAVファイルへのエクスポート中にエラーが発生しました。");
         }
+
+        // Clean up connections
+        masterGainNode.disconnect(destination);
     };
 
-    let exportIntervalId = setInterval(playExportSequence, interval);
+    // Run export sequence
+    exportRecorder.start();
+    exportButton.classList.add("exporting");
 
-    // アニメーションの時間をBPMに基づいて設定
-    const fillDuration = (30000 / bpmControl.value) * stepsPerBeat / 1000; // ステップ数に基づいて時間を秒で計算
+    const bpm = parseFloat(bpmControl.value) || 120;
+    const fillDuration = (30000 / bpm) * stepsPerBeat / 1000;
     exportButton.style.setProperty('--fill-duration', `${fillDuration}s`);
+
+    isExporting = true;
+    exportStepCount = 0;
+    currentStep = 0;
+    nextNoteTime = audioContext.currentTime;
+
+    // Launch scheduler loop for capturing
+    schedulerTimerId = setInterval(scheduler, lookahead);
 });
 
-// ミュートボタンのクリックイベントを設定
-muteButtons.forEach((button, index) => {
-    button.addEventListener("click", () => {
-        muteStates[index] = !muteStates[index]; // ミュート状態をトグル
-        button.classList.toggle("muted", muteStates[index]); // ボタンのクラスをトグル
-    });
-});
+function stopExporting() {
+    isExporting = false;
+    clearInterval(schedulerTimerId);
+    schedulerTimerId = null;
+
+    if (exportRecorder && exportRecorder.state === "recording") {
+        exportRecorder.stop();
+    }
+
+    exportButton.classList.remove("exporting");
+    allSteps.forEach(step => step.classList.remove("current"));
+}
+
+// ============================================================================
+// Oscilloscope & Spectrum Render Processing
+// ============================================================================
 
 function setupVisualizer() {
     if (!audioContext) return;
-    analyser = audioContext.createAnalyser();
-    gainNode.connect(analyser);
-    analyser.fftSize = 2048;
-    bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
+    visualizerAnalyser = audioContext.createAnalyser();
+    masterGainNode.connect(visualizerAnalyser);
+    visualizerAnalyser.fftSize = 2048;
+    const bufferLength = visualizerAnalyser.frequencyBinCount;
+    visualizerDataArray = new Uint8Array(bufferLength);
 }
 
 function drawVisualizer() {
-    if (!analyser) return;
+    if (!visualizerAnalyser) return;
     requestAnimationFrame(drawVisualizer);
-    analyser.getByteTimeDomainData(dataArray);
+    
+    visualizerAnalyser.getByteTimeDomainData(visualizerDataArray);
+    
+    // Slight translucent overlay to get a trailing oscilloscope trace
     canvasCtx.fillStyle = 'rgba(235, 235, 235, 0.31)';
     canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+    
     canvasCtx.lineWidth = 2;
     canvasCtx.strokeStyle = '#6ab5ae';
     canvasCtx.beginPath();
+
+    const bufferLength = visualizerAnalyser.frequencyBinCount;
     const sliceWidth = canvas.width / bufferLength;
     let x = 0;
+
     for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
+        const v = visualizerDataArray[i] / 128.0;
         const y = v * canvas.height / 2;
         if (i === 0) {
             canvasCtx.moveTo(x, y);
@@ -642,32 +799,51 @@ function drawVisualizer() {
         }
         x += sliceWidth;
     }
-    canvasCtx.lineTo(canvas.width, canvas.height/2);
+    canvasCtx.lineTo(canvas.width, canvas.height / 2);
     canvasCtx.stroke();
 }
 
 function setupSpectrum() {
     if (!audioContext) return;
-    analyser = audioContext.createAnalyser();
-    gainNode.connect(analyser);
-    analyser.fftSize = 256;
-    bufferLength = analyser.frequencyBinCount;
-    frequencyDataArray = new Uint8Array(bufferLength);
+    spectrumAnalyser = audioContext.createAnalyser();
+    masterGainNode.connect(spectrumAnalyser);
+    spectrumAnalyser.fftSize = 256;
+    const bufferLength = spectrumAnalyser.frequencyBinCount;
+    spectrumDataArray = new Uint8Array(bufferLength);
 }
 
 function drawSpectrum() {
-    if (!analyser) return;
+    if (!spectrumAnalyser) return;
     requestAnimationFrame(drawSpectrum);
-    analyser.getByteFrequencyData(frequencyDataArray);
+    
+    spectrumAnalyser.getByteFrequencyData(spectrumDataArray);
+    
     spectrumCtx.fillStyle = 'rgba(235, 235, 235, 0.31)';
     spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+
+    const bufferLength = spectrumAnalyser.frequencyBinCount;
     const barWidth = (spectrumCanvas.width / bufferLength) * 2.5;
     let barHeight;
     let x = 0;
+
     for (let i = 0; i < bufferLength; i++) {
-        barHeight = frequencyDataArray[i];
+        barHeight = spectrumDataArray[i];
         spectrumCtx.fillStyle = '#6ab5ae';
         spectrumCtx.fillRect(x, spectrumCanvas.height - barHeight / 2, barWidth, barHeight / 2);
         x += barWidth + 1;
     }
 }
+
+// ============================================================================
+// Initialization Entry Point
+// ============================================================================
+
+window.onload = function() {
+    updateStepButtons();
+    loadDefaultSounds();
+    updateBpmDisplayArrows();
+    
+    // Trigger paint cycles
+    drawVisualizer();
+    drawSpectrum();
+};
