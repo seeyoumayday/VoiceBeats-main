@@ -65,7 +65,9 @@
                     <button class="step"></button>
                     <button class="step"></button>
                     <button class="step"></button>
-                    <button class="record-button has-tooltip" data-tooltip="録音"></button> <!-- !ボタンを追加 -->
+                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                        <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    </div>
                     <div class="waveform-container">
                         <canvas class="waveform" id="kick-waveform"></canvas>
                         <div class="offset-handle"></div>
@@ -100,7 +102,9 @@
                     <button class="step"></button>
                     <button class="step"></button>
                     <button class="step"></button>
-                    <button class="record-button has-tooltip" data-tooltip="録音"></button> <!-- !ボタンを追加 -->
+                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                        <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    </div>
                     <div class="waveform-container">
                         <canvas class="waveform" id="snare-waveform"></canvas>
                         <div class="offset-handle"></div>
@@ -135,7 +139,9 @@
                     <button class="step"></button>
                     <button class="step"></button>
                     <button class="step"></button>
-                    <button class="record-button has-tooltip" data-tooltip="録音"></button> <!-- !ボタンを追加 -->
+                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                        <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    </div>
                     <div class="waveform-container">
                         <canvas class="waveform" id="clap-waveform"></canvas>
                         <div class="offset-handle"></div>
@@ -170,7 +176,9 @@
                     <button class="step"></button>
                     <button class="step"></button>
                     <button class="step"></button>
-                    <button class="record-button has-tooltip" data-tooltip="録音"></button> <!-- !ボタンを追加 -->
+                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                        <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    </div>
                     <div class="waveform-container">
                         <canvas class="waveform" id="hihat-waveform"></canvas>
                         <div class="offset-handle"></div>
@@ -205,7 +213,9 @@
                     <button class="step"></button>
                     <button class="step"></button>
                     <button class="step"></button>
-                    <button class="record-button has-tooltip" data-tooltip="録音"></button> <!-- !ボタンを追加 -->
+                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                        <button class="record-button"></button> <!-- !ボタンを追加 -->
+                    </div>
                     <div class="waveform-container">
                         <canvas class="waveform" id="bell-waveform"></canvas>
                         <div class="offset-handle"></div>
@@ -218,7 +228,7 @@
                 </div>
             </div>
         </div>
-        <button id="play"></button> <!-- 再生ボタン -->
+        <button id="play" class="has-tooltip" data-tooltip="再生"></button> <!-- 再生ボタン -->
         <div id="volume-container">
             <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5"> <!-- 音量バーを追加 -->
         </div>

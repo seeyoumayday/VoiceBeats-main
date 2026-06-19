@@ -254,11 +254,13 @@ playButton.addEventListener("click", async () => {
         nextNoteTime = audioContext.currentTime;
         schedulerTimerId = setInterval(scheduler, lookahead);
         playButton.classList.add("playing");
+        playButton.setAttribute("data-tooltip", "停止");
     } else {
         // Stop live playback
         clearInterval(schedulerTimerId);
         schedulerTimerId = null;
         playButton.classList.remove("playing");
+        playButton.setAttribute("data-tooltip", "再生");
         // Clear all highlight states
         allSteps.forEach(step => step.classList.remove("current"));
     }
@@ -274,6 +276,7 @@ dropdownLinks.forEach(link => {
             clearInterval(schedulerTimerId);
             schedulerTimerId = null;
             playButton.classList.remove("playing");
+            playButton.setAttribute("data-tooltip", "再生");
             allSteps.forEach(step => step.classList.remove("current"));
         }
 
@@ -644,7 +647,7 @@ tracks.forEach(track => {
                     // Restore recording buttons UI state
                     tracks.forEach(t => {
                         t.recordButton.disabled = false;
-                        t.recordButton.setAttribute("data-tooltip", "録音");
+                        t.recordButton.parentElement.setAttribute("data-tooltip", "録音");
                     });
                     track.recordButton.classList.remove("recording");
                     track.recordButton.style.backgroundImage = "url('sample/rec.png')";
@@ -652,7 +655,7 @@ tracks.forEach(track => {
 
                 mediaRecorder.start();
                 track.recordButton.classList.add("recording");
-                track.recordButton.setAttribute("data-tooltip", "録音中");
+                track.recordButton.parentElement.setAttribute("data-tooltip", "録音中");
                 track.recordButton.style.backgroundImage = "url('sample/rec.png')";
 
                 // Compute recording animation length from BPM (exactly 4 beats time limit)
@@ -701,6 +704,7 @@ exportButton.addEventListener("click", async () => {
         clearInterval(schedulerTimerId);
         schedulerTimerId = null;
         playButton.classList.remove("playing");
+        playButton.setAttribute("data-tooltip", "再生");
         allSteps.forEach(step => step.classList.remove("current"));
     }
 
