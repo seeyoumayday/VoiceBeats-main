@@ -102,6 +102,16 @@ let exportChunks = [];
 function initAudio() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Use AudioSession API (iOS 16.4+ Safari) to output audio even in Silent/Mute switch mode
+        if (navigator.audioSession) {
+            try {
+                navigator.audioSession.type = 'playback';
+            } catch (e) {
+                console.warn('Failed to set audio session type to playback:', e);
+            }
+        }
+
         masterGainNode = audioContext.createGain();
         masterGainNode.connect(audioContext.destination);
 
@@ -940,13 +950,19 @@ window.onload = function() {
     drawSpectrum();
 
     // Global touchstart and click listener to resume AudioContext (iOS / Mobile Web Audio policy)
-    const unlockAudio = async () => {
+    const unlockAudio = () => {
         initAudio();
         if (audioContext) {
             if (audioContext.state === "suspended") {
-                await audioContext.resume();
-            }
-            if (audioContext.state === "running") {
+                audioContext.resume().then(() => {
+                    if (audioContext.state === "running") {
+                        document.removeEventListener("click", unlockAudio);
+                        document.removeEventListener("touchstart", unlockAudio);
+                    }
+                }).catch(err => {
+                    console.error("AudioContext resume failed:", err);
+                });
+            } else if (audioContext.state === "running") {
                 document.removeEventListener("click", unlockAudio);
                 document.removeEventListener("touchstart", unlockAudio);
             }
