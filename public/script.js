@@ -524,7 +524,7 @@ function drawWaveform(buffer, canvasId) {
     const height = canvasEl.height;
     
     context.clearRect(0, 0, width, height);
-    context.fillStyle = "#76c7c0";
+    context.fillStyle = "#0ea5e9";
     const step = Math.ceil(data.length / width);
     const amp = height / 2;
 
@@ -650,13 +650,11 @@ tracks.forEach(track => {
                         t.recordButton.parentElement.setAttribute("data-tooltip", "録音");
                     });
                     track.recordButton.classList.remove("recording");
-                    track.recordButton.style.backgroundImage = "url('sample/rec.png')";
                 };
 
                 mediaRecorder.start();
                 track.recordButton.classList.add("recording");
                 track.recordButton.parentElement.setAttribute("data-tooltip", "録音中");
-                track.recordButton.style.backgroundImage = "url('sample/rec.png')";
 
                 // Compute recording animation length from BPM (exactly 4 beats time limit)
                 const bpm = parseFloat(bpmControl.value) || 120;
@@ -802,11 +800,11 @@ function drawVisualizer() {
     visualizerAnalyser.getByteTimeDomainData(visualizerDataArray);
     
     // Slight translucent overlay to get a trailing oscilloscope trace
-    canvasCtx.fillStyle = 'rgba(235, 235, 235, 0.31)';
+    canvasCtx.fillStyle = 'rgba(255, 255, 255, 0.35)';
     canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
     
     canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = '#6ab5ae';
+    canvasCtx.strokeStyle = '#0ea5e9';
     canvasCtx.beginPath();
 
     const bufferLength = visualizerAnalyser.frequencyBinCount;
@@ -842,7 +840,7 @@ function drawSpectrum() {
     
     spectrumAnalyser.getByteFrequencyData(spectrumDataArray);
     
-    spectrumCtx.fillStyle = 'rgba(235, 235, 235, 0.31)';
+    spectrumCtx.fillStyle = 'rgba(255, 255, 255, 0.35)';
     spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
 
     const bufferLength = spectrumAnalyser.frequencyBinCount;
@@ -852,7 +850,7 @@ function drawSpectrum() {
 
     for (let i = 0; i < bufferLength; i++) {
         barHeight = spectrumDataArray[i];
-        spectrumCtx.fillStyle = '#6ab5ae';
+        spectrumCtx.fillStyle = '#0ea5e9';
         spectrumCtx.fillRect(x, spectrumCanvas.height - barHeight / 2, barWidth, barHeight / 2);
         x += barWidth + 1;
     }

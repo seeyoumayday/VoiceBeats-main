@@ -36,6 +36,7 @@
     </nav>
     <main>
         <div class="visualize-container">
+            <button id="play" class="has-tooltip" data-tooltip="再生"></button> <!-- 再生ボタン -->
             <canvas id="visualizer" class="visualizer"></canvas> <!-- オーディオビジュアライザのキャンバスを追加 -->
             <canvas id="spectrum" class="spectrum"></canvas> <!-- スペクトラムのキャンバスを追加 -->
         </div>
@@ -228,7 +229,6 @@
                 </div>
             </div>
         </div>
-        <button id="play" class="has-tooltip" data-tooltip="再生"></button> <!-- 再生ボタン -->
         <div id="volume-container">
             <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5"> <!-- 音量バーを追加 -->
         </div>
