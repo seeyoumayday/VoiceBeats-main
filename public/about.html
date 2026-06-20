@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="same-origin">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
 </head>
+
 <body class="about-body">
     <header>
         <img src="sample/logo.png" alt="Logo" class="logo"> <!-- ロゴ画像を追加 -->
@@ -34,30 +36,53 @@
         </ul>
     </nav>
     <main class="about-main">
-        <section class="about-left">
-            <img src="sample/icon.PNG" alt="My Icon" class="my-icon"> <!-- アイコン画像を追加 -->
-            <hr class="separator"><h2>自己紹介</h2>
-            <p>五月一日と申します。<br><br>
-            ポケポケでピジョットexを無駄に5枚持っています。<br><br>
-            楽曲制作をしたり、ベースを弾いたりして活動しています。</p>
-            <br>
-            <hr class="separator">
-            <h3>活動</h3>
-            <ul class = "twitter">Twitter :   <a href="https://x.com/Seeyou_Mayday" target="_blank">@Seeyou_Mayday</a></ul>
-            <ul class = "twitter">niconico :   <a href="https://www.nicovideo.jp/watch/sm42902596" target="_blank">ニコニコ</a></ul>
-        </section>
-        <section class="about-right">
-            <h2>最近の投稿</h2>
-            <hr class="separator">
-            <br>
-            <div id="twitter-feed">
-                <!-- Twitterのウィジェットコードをここに追加 -->
-                <a class="twitter-timeline" data-width="400" data-height="444" href="https://twitter.com/Seeyou_Mayday?ref_src=twsrc%5Etfw">Tweets by Seeyou_Mayday</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        <div class="profile-container">
+            <div class="profile-card">
+                <!-- Music wave visualizer decoration in the background -->
+                <div class="music-wave-bg">
+                    <div class="music-bar" style="--i: 1"></div>
+                    <div class="music-bar" style="--i: 2"></div>
+                    <div class="music-bar" style="--i: 3"></div>
+                    <div class="music-bar" style="--i: 4"></div>
+                    <div class="music-bar" style="--i: 5"></div>
+                    <div class="music-bar" style="--i: 6"></div>
+                    <div class="music-bar" style="--i: 7"></div>
+                    <div class="music-bar" style="--i: 8"></div>
+                </div>
+
+                <div class="profile-header">
+                    <div class="profile-image-wrapper">
+                        <img src="sample/icon.PNG" alt="五月一日" class="my-icon-new">
+                    </div>
+                    <h2 class="profile-name">五月一日 <span class="profile-handle">Mayday</span></h2>
+                    <div class="profile-badges">
+                        <span class="profile-badge">Music Producer</span>
+                        <span class="profile-badge">Bassist</span>
+                    </div>
+                </div>
+
+                <div class="profile-body">
+                    <p class="profile-desc">
+                        五月一日と申します。<br>
+                        楽曲制作やベースの演奏を中心に活動しています。<br>
+                    </p>
+                </div>
+
+                <div class="profile-actions">
+                    <a href="https://seeyoumayday.github.io/Portfolio/" target="_blank" class="portfolio-cta">
+                        <span>PORTFOLIO SITE</span>
+                        <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </a>
+                </div>
             </div>
-        </section>
+        </div>
     </main>
-    <footer class="about-footer">
+    <footer class="howto-footer">
         <p>&copy; 2024 Mayday</p> <!-- フッタ -->
     </footer>
 </body>
+
 </html>

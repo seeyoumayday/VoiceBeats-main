@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,8 @@
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
 </head>
-<body class="howto-body">
+
+<body class="update-body">
     <header>
         <img src="sample/logo.png" alt="Logo" class="logo"> <!-- ロゴ画像を追加 -->
         <h1>Voice Beats</h1> <!-- ヘッダタイトル -->
@@ -33,18 +35,46 @@
             <li><a href="about.html">ABOUT</a></li>
         </ul>
     </nav>
-    <main>
-        <h2>アップデート情報</h2>
-        <hr class="separator">
-        <section>
-            <h3>バージョン 1.0.0 - 2024年12月28日</h3>
-            <ul>
-                <li>基本的な機能を実装しました。</li>
-            </ul>
-        </section>
+    <main class="update-main">
+        <div class="update-container">
+            <div class="update-card">
+                <h2 class="update-card-title">アップデート情報</h2>
+                
+                <div class="timeline">
+                    <!-- Timeline Item: v1.1.0 -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <span class="version-badge">v1.1.0</span>
+                                <span class="version-date">2026年6月20日</span>
+                            </div>
+                            <ul class="update-details-list">
+                                <li>全体のUIを整えました。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline Item: v1.0.0 -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <span class="version-badge">v1.0.0</span>
+                                <span class="version-date">2024年12月28日</span>
+                            </div>
+                            <ul class="update-details-list">
+                                <li>基本的な機能を実装しました。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
     <footer class="howto-footer">
         <p>&copy; 2024 Mayday</p> <!-- フッタ -->
     </footer>
 </body>
+
 </html>
