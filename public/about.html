@@ -28,7 +28,12 @@
         <button id="export" class="export-button"></button> <!-- エクスポートボタン -->
     </header>
     <nav>
-        <ul>
+        <button class="hamburger-menu" id="hamburger-btn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <ul class="nav-links">
             <li><a href="index.html">HOME</a></li>
             <li><a href="howto.html">HOW TO</a></li>
             <li><a href="update.html">UPDATE</a></li>
@@ -83,6 +88,12 @@
     <footer class="howto-footer">
         <p>&copy; 2024 Mayday</p> <!-- フッタ -->
     </footer>
+    <script>
+        document.getElementById('hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
 </body>
 
 </html>

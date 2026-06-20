@@ -1,0 +1,21 @@
+{
+  "short_name": "VoiceBeats",
+  "name": "Voice Beats - Anywhere Sequencer",
+  "icons": [
+    {
+      "src": "sample/logo-tab.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "sample/logo-tab.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#f8fafc",
+  "theme_color": "#0ea5e9",
+  "display": "standalone",
+  "orientation": "portrait-primary"
+}

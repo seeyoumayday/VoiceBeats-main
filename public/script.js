@@ -386,8 +386,13 @@ function updateStepButtons() {
                 step.style.display = "inline-block";
                 if (rhythmPrecision === "1/16") {
                     step.classList.add("sixteenth");
+                    step.classList.remove("triplet");
+                } else if (rhythmPrecision === "1/8T") {
+                    step.classList.add("triplet");
+                    step.classList.remove("sixteenth");
                 } else {
                     step.classList.remove("sixteenth");
+                    step.classList.remove("triplet");
                 }
             } else {
                 step.style.display = "none";
@@ -467,28 +472,48 @@ function updateBpmDisplayArrows() {
     bpmDisplay.classList.toggle('min', bpmValue <= 60);
 }
 
-// Drag BPM to adjust
-bpmDisplay.addEventListener("mousedown", (event) => {
-    event.preventDefault();
-    const startY = event.clientY;
-    const startBpm = parseInt(bpmControl.value, 10);
-
-    const onMouseMoveBpm = (moveEvent) => {
-        const deltaY = startY - moveEvent.clientY;
-        const newBpm = Math.min(200, Math.max(60, startBpm + deltaY));
+// Drag BPM to adjust (Mouse and Touch support)
+const startBpmDrag = (startY, startBpm) => {
+    const onMoveBpm = (clientY) => {
+        const deltaY = startY - clientY;
+        const newBpm = Math.round(Math.min(200, Math.max(60, startBpm + deltaY)));
         bpmControl.value = newBpm;
         bpmDisplay.textContent = `♩=${newBpm}`;
         updateBpmDisplayArrows();
     };
 
-    const onMouseUpBpm = () => {
+    const onMouseMoveBpm = (moveEvent) => {
+        onMoveBpm(moveEvent.clientY);
+    };
+
+    const onTouchMoveBpm = (moveEvent) => {
+        if (moveEvent.cancelable) moveEvent.preventDefault();
+        onMoveBpm(moveEvent.touches[0].clientY);
+    };
+
+    const onDragEndBpm = () => {
         document.removeEventListener("mousemove", onMouseMoveBpm);
-        document.removeEventListener("mouseup", onMouseUpBpm);
+        document.removeEventListener("mouseup", onDragEndBpm);
+        document.removeEventListener("touchmove", onTouchMoveBpm);
+        document.removeEventListener("touchend", onDragEndBpm);
     };
 
     document.addEventListener("mousemove", onMouseMoveBpm);
-    document.addEventListener("mouseup", onMouseUpBpm);
+    document.addEventListener("mouseup", onDragEndBpm);
+    document.addEventListener("touchmove", onTouchMoveBpm, { passive: false });
+    document.addEventListener("touchend", onDragEndBpm);
+};
+
+bpmDisplay.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+    startBpmDrag(event.clientY, parseInt(bpmControl.value, 10));
 });
+
+bpmDisplay.addEventListener("touchstart", (event) => {
+    const startY = event.touches[0].clientY;
+    const startBpm = parseInt(bpmControl.value, 10);
+    startBpmDrag(startY, startBpm);
+}, { passive: true });
 
 // Click BPM display arrows
 bpmDisplay.addEventListener("click", (event) => {
@@ -548,10 +573,10 @@ tracks.forEach(track => {
     const endOffsetOverlay = track.endOffsetOverlay;
     const waveform = track.waveformCanvas;
 
-    // Left handle (Offset Start)
-    const onMouseMoveOffset = (event) => {
+    // Left handle (Offset Start - Mouse and Touch support)
+    const onMoveOffset = (clientX) => {
         const rect = waveform.getBoundingClientRect();
-        const offset = Math.min(Math.max(0, event.clientX - rect.left), rect.width);
+        const offset = Math.min(Math.max(0, clientX - rect.left), rect.width);
         const endOffset = parseFloat(endOffsetHandle.style.right) || 0;
         if (offset < rect.width - endOffset - 5) {
             offsetHandle.style.left = `${offset}px`;
@@ -560,21 +585,38 @@ tracks.forEach(track => {
         }
     };
 
-    const onMouseUpOffset = () => {
+    const onMouseMoveOffset = (event) => {
+        onMoveOffset(event.clientX);
+    };
+
+    const onTouchMoveOffset = (event) => {
+        if (event.cancelable) event.preventDefault();
+        onMoveOffset(event.touches[0].clientX);
+    };
+
+    const onDragEndOffset = () => {
         document.removeEventListener("mousemove", onMouseMoveOffset);
-        document.removeEventListener("mouseup", onMouseUpOffset);
+        document.removeEventListener("mouseup", onDragEndOffset);
+        document.removeEventListener("touchmove", onTouchMoveOffset);
+        document.removeEventListener("touchend", onDragEndOffset);
     };
 
     offsetHandle.addEventListener("mousedown", (event) => {
         event.preventDefault();
         document.addEventListener("mousemove", onMouseMoveOffset);
-        document.addEventListener("mouseup", onMouseUpOffset);
+        document.addEventListener("mouseup", onDragEndOffset);
     });
 
-    // Right handle (Offset End)
-    const onMouseMoveEndOffset = (event) => {
+    offsetHandle.addEventListener("touchstart", (event) => {
+        if (event.cancelable) event.preventDefault();
+        document.addEventListener("touchmove", onTouchMoveOffset, { passive: false });
+        document.addEventListener("touchend", onDragEndOffset);
+    }, { passive: false });
+
+    // Right handle (Offset End - Mouse and Touch support)
+    const onMoveEndOffset = (clientX) => {
         const rect = waveform.getBoundingClientRect();
-        const endOffset = Math.min(Math.max(0, rect.right - event.clientX), rect.width);
+        const endOffset = Math.min(Math.max(0, rect.right - clientX), rect.width);
         const offset = parseFloat(offsetHandle.style.left) || 0;
         if (endOffset < rect.width - offset - 4) {
             endOffsetHandle.style.right = `${endOffset}px`;
@@ -583,16 +625,33 @@ tracks.forEach(track => {
         }
     };
 
-    const onMouseUpEndOffset = () => {
+    const onMouseMoveEndOffset = (event) => {
+        onMoveEndOffset(event.clientX);
+    };
+
+    const onTouchMoveEndOffset = (event) => {
+        if (event.cancelable) event.preventDefault();
+        onMoveEndOffset(event.touches[0].clientX);
+    };
+
+    const onDragEndEndOffset = () => {
         document.removeEventListener("mousemove", onMouseMoveEndOffset);
-        document.removeEventListener("mouseup", onMouseUpEndOffset);
+        document.removeEventListener("mouseup", onDragEndEndOffset);
+        document.removeEventListener("touchmove", onTouchMoveEndOffset);
+        document.removeEventListener("touchend", onDragEndEndOffset);
     };
 
     endOffsetHandle.addEventListener("mousedown", (event) => {
         event.preventDefault();
         document.addEventListener("mousemove", onMouseMoveEndOffset);
-        document.addEventListener("mouseup", onMouseUpEndOffset);
+        document.addEventListener("mouseup", onDragEndEndOffset);
     });
+
+    endOffsetHandle.addEventListener("touchstart", (event) => {
+        if (event.cancelable) event.preventDefault();
+        document.addEventListener("touchmove", onTouchMoveEndOffset, { passive: false });
+        document.addEventListener("touchend", onDragEndEndOffset);
+    }, { passive: false });
 });
 
 // ============================================================================
@@ -622,7 +681,18 @@ tracks.forEach(track => {
 
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
+                // Determine supported MIME type for recording (especially for iOS Safari compatibility)
+                const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"];
+                let selectedMimeType = "";
+                for (const mime of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(mime)) {
+                        selectedMimeType = mime;
+                        break;
+                    }
+                }
+
+                const options = selectedMimeType ? { mimeType: selectedMimeType } : {};
+                mediaRecorder = new MediaRecorder(stream, options);
                 recordedChunks = [];
 
                 mediaRecorder.ondataavailable = event => {
@@ -632,7 +702,7 @@ tracks.forEach(track => {
                 };
 
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { type: "audio/wav" });
+                    const blob = new Blob(recordedChunks, { type: selectedMimeType || "audio/wav" });
                     const url = URL.createObjectURL(blob);
 
                     loadAudioFile(url).then(buffer => {
@@ -868,4 +938,171 @@ window.onload = function() {
     // Trigger paint cycles
     drawVisualizer();
     drawSpectrum();
+
+    // Global touchstart and click listener to resume AudioContext (iOS / Mobile Web Audio policy)
+    const unlockAudio = async () => {
+        initAudio();
+        if (audioContext) {
+            if (audioContext.state === "suspended") {
+                await audioContext.resume();
+            }
+            if (audioContext.state === "running") {
+                document.removeEventListener("click", unlockAudio);
+                document.removeEventListener("touchstart", unlockAudio);
+            }
+        }
+    };
+    document.addEventListener("click", unlockAudio);
+    document.addEventListener("touchstart", unlockAudio);
+
+    // Force check and update Service Worker to clear stale caches
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) {
+                registration.update();
+            }
+        });
+    }
+
+    // === Analyzer Tabs switching (Mobile only) ===
+    const analyzerTabs = document.querySelectorAll(".analyzer-tab");
+    analyzerTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            analyzerTabs.forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+            
+            const activeTab = tab.getAttribute("data-tab");
+            const visualizer = document.getElementById("visualizer");
+            const spectrum = document.getElementById("spectrum");
+            
+            if (activeTab === "visualizer") {
+                visualizer.style.display = "block";
+                spectrum.style.display = "none";
+            } else {
+                visualizer.style.display = "none";
+                spectrum.style.display = "block";
+            }
+        });
+    });
+
+    // === Track Tabs switching (Mobile only) ===
+    const trackTabs = document.querySelectorAll(".track-tab");
+    const updateActiveTrackMobile = (activeTrackId) => {
+        tracks.forEach(track => {
+            if (track.id === activeTrackId) {
+                track.container.classList.add("active-track");
+            } else {
+                track.container.classList.remove("active-track");
+            }
+            // Ensure all tracks are visible on mobile in accordion grid mode
+            track.container.style.display = "";
+        });
+    };
+
+    trackTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            trackTabs.forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+            
+            const selectedTrack = tab.getAttribute("data-track");
+            updateActiveTrackMobile(selectedTrack);
+        });
+    });
+
+    // Make track container click trigger selection on mobile
+    tracks.forEach(track => {
+        track.container.addEventListener("click", (e) => {
+            // Only switch track on mobile (width <= 768px)
+            if (window.innerWidth <= 768) {
+                // Ignore click if it was on any control/input or step button to avoid layout trigger conflicts
+                const isInteractive = e.target.closest('.track-controls') || e.target.closest('.step');
+                if (!isInteractive) {
+                    const tab = document.querySelector(`.track-tab[data-track="${track.id}"]`);
+                    if (tab) {
+                        tab.click();
+                    }
+                }
+            }
+        });
+    });
+
+    // Make circular dials easy to adjust via vertical drag on mobile
+    const setupDialTouchControls = () => {
+        const dials = document.querySelectorAll(".volume-control, .pitch-bend-control");
+        dials.forEach(dial => {
+            dial.addEventListener("touchstart", (e) => {
+                const touch = e.touches[0];
+                const startY = touch.clientY;
+                const startVal = parseFloat(dial.value);
+                const step = parseFloat(dial.step) || 0.01;
+                const min = parseFloat(dial.min) || 0;
+                const max = parseFloat(dial.max) || 1;
+                
+                const onTouchMove = (moveEvent) => {
+                    if (moveEvent.cancelable) moveEvent.preventDefault();
+                    const currentY = moveEvent.touches[0].clientY;
+                    const deltaY = startY - currentY; // Drag up to increase value
+                    
+                    // 150px vertical drag spans full range from min to max
+                    const sensitivity = 150; 
+                    const deltaVal = (deltaY / sensitivity) * (max - min);
+                    let newVal = startVal + deltaVal;
+                    
+                    // Clamp and snap to steps
+                    newVal = Math.min(max, Math.max(min, Math.round(newVal / step) * step));
+                    
+                    if (dial.value !== newVal.toString()) {
+                        dial.value = newVal;
+                        dial.dispatchEvent(new Event("input")); // Triggers existing update listeners
+                    }
+                };
+                
+                const onTouchEnd = () => {
+                    document.removeEventListener("touchmove", onTouchMove);
+                    document.removeEventListener("touchend", onTouchEnd);
+                };
+                
+                document.addEventListener("touchmove", onTouchMove, { passive: false });
+                document.addEventListener("touchend", onTouchEnd);
+            }, { passive: true });
+        });
+    };
+
+    setupDialTouchControls();
+
+    // === Responsive Mobile Check & Switch logic ===
+    const checkMobileLayout = () => {
+        if (window.innerWidth <= 768) {
+            // Apply mobile defaults
+            const activeTrackTab = document.querySelector(".track-tab.active");
+            if (activeTrackTab) {
+                updateActiveTrackMobile(activeTrackTab.getAttribute("data-track"));
+            }
+            
+            const activeAnalyzerTab = document.querySelector(".analyzer-tab.active");
+            if (activeAnalyzerTab) {
+                const activeTab = activeAnalyzerTab.getAttribute("data-tab");
+                const visualizer = document.getElementById("visualizer");
+                const spectrum = document.getElementById("spectrum");
+                if (activeTab === "visualizer") {
+                    visualizer.style.display = "block";
+                    spectrum.style.display = "none";
+                } else {
+                    visualizer.style.display = "none";
+                    spectrum.style.display = "block";
+                }
+            }
+        } else {
+            // Restore desktop state (show all tracks, remove active class, and restore visualizers)
+            tracks.forEach(track => {
+                track.container.style.display = "";
+                track.container.classList.remove("active-track");
+            });
+            document.getElementById("visualizer").style.display = "";
+            document.getElementById("spectrum").style.display = "";
+        }
+    };
+
+    window.addEventListener("resize", checkMobileLayout);
+    checkMobileLayout(); // Check immediately on load
 };

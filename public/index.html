@@ -8,6 +8,12 @@
     <script src="coi-serviceworker.js"></script>
     <link rel="icon" href="sample/logo-tab.png" type="image/x-icon">
     <link rel="stylesheet" href="styles.css"> <!-- CSSファイルのリンク -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VoiceBeats">
+    <link rel="apple-touch-icon" href="sample/logo-tab.png">
+    <meta name="theme-color" content="#0ea5e9">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
     <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.0/dist/ffmpeg.min.js"></script>
@@ -30,7 +36,12 @@
         <button id="export" class="export-button"></button> <!-- エクスポートボタン -->
     </header>
     <nav>
-        <ul>
+        <button class="hamburger-menu" id="hamburger-btn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <ul class="nav-links">
             <li><a href="index.html">HOME</a></li>
             <li><a href="howto.html">HOW TO</a></li>
             <li><a href="update.html">UPDATE</a></li>
@@ -40,215 +51,250 @@
     <main>
         <div class="visualize-container">
             <button id="play" class="has-tooltip" data-tooltip="再生"></button> <!-- 再生ボタン -->
-            <canvas id="visualizer" class="visualizer"></canvas> <!-- オーディオビジュアライザのキャンバスを追加 -->
-            <canvas id="spectrum" class="spectrum"></canvas> <!-- スペクトラムのキャンバスを追加 -->
+            <div class="analyzer-wrapper">
+                <div class="analyzer-tabs">
+                    <button class="analyzer-tab active" data-tab="visualizer">Wave</button>
+                    <button class="analyzer-tab" data-tab="spectrum">Spec</button>
+                </div>
+                <div class="analyzer-canvas-container">
+                    <canvas id="visualizer" class="visualizer"></canvas> <!-- オーディオビジュアライザのキャンバスを追加 -->
+                    <canvas id="spectrum" class="spectrum"></canvas> <!-- スペクトラムのキャンバスを追加 -->
+                </div>
+            </div>
         </div>
         <div id="sequencer">
+            <div class="track-tabs">
+                <button class="track-tab active" data-track="kick">KICK</button>
+                <button class="track-tab" data-track="snare">SNARE</button>
+                <button class="track-tab" data-track="clap">CLAP</button>
+                <button class="track-tab" data-track="hihat">HIHAT</button>
+                <button class="track-tab" data-track="bell">BELL</button>
+            </div>
             <div class="track-container">
                 <div class="track kick">
-                    <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
-                        <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- キックピッチベンド調節バー -->
+                    <div class="track-controls">
+                        <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
+                            <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- キックピッチベンド調節バー -->
+                        </div>
+                        <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
+                            <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- キック音量調節バー -->
+                        </div>
+                        <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
+                        <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                            <button class="record-button"></button> <!-- !ボタンを追加 -->
+                        </div>
+                        <div class="waveform-container">
+                            <canvas class="waveform" id="kick-waveform"></canvas>
+                            <div class="offset-handle"></div>
+                            <div class="end-offset-handle"></div>
+                            <div class="offset-overlay"></div>
+                            <div class="end-offset-overlay"></div>
+                        </div>
+                        <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
+                        <!-- キックオフセット調節バー -->
+                        <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
+                        <!-- キック終了位置調節バー -->
                     </div>
-                    <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
-                        <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- キック音量調節バー -->
+                    <div class="track-steps">
+                        <button class="step"></button> <!-- キックステップボタン -->
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
                     </div>
-                    <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
-                    <button class="step"></button> <!-- キックステップボタン -->
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
-                        <button class="record-button"></button> <!-- !ボタンを追加 -->
-                    </div>
-                    <div class="waveform-container">
-                        <canvas class="waveform" id="kick-waveform"></canvas>
-                        <div class="offset-handle"></div>
-                        <div class="end-offset-handle"></div>
-                        <div class="offset-overlay"></div>
-                        <div class="end-offset-overlay"></div>
-                    </div>
-                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
-                    <!-- キックオフセット調節バー -->
-                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
-                    <!-- キック終了位置調節バー -->
                 </div>
                 <div class="track snare">
-                    <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
-                        <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- スネアピッチベンド調節バー -->
+                    <div class="track-controls">
+                        <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
+                            <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- スネアピッチベンド調節バー -->
+                        </div>
+                        <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
+                            <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- スネア音量調節バー -->
+                        </div>
+                        <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
+                        <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                            <button class="record-button"></button> <!-- !ボタンを追加 -->
+                        </div>
+                        <div class="waveform-container">
+                            <canvas class="waveform" id="snare-waveform"></canvas>
+                            <div class="offset-handle"></div>
+                            <div class="end-offset-handle"></div>
+                            <div class="offset-overlay"></div>
+                            <div class="end-offset-overlay"></div>
+                        </div>
+                        <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
+                        <!-- スネアオフセット調節バー -->
+                        <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
+                        <!-- スネア終了位置調節バー -->
                     </div>
-                    <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
-                        <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- スネア音量調節バー -->
+                    <div class="track-steps">
+                        <button class="step"></button> <!-- スネアステップボタン -->
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
                     </div>
-                    <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
-                    <button class="step"></button> <!-- スネアステップボタン -->
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
-                        <button class="record-button"></button> <!-- !ボタンを追加 -->
-                    </div>
-                    <div class="waveform-container">
-                        <canvas class="waveform" id="snare-waveform"></canvas>
-                        <div class="offset-handle"></div>
-                        <div class="end-offset-handle"></div>
-                        <div class="offset-overlay"></div>
-                        <div class="end-offset-overlay"></div>
-                    </div>
-                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
-                    <!-- スネアオフセット調節バー -->
-                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
-                    <!-- スネア終了位置調節バー -->
                 </div>
                 <div class="track clap">
-                    <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
-                        <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- クラップピッチベンド調節バー -->
+                    <div class="track-controls">
+                        <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
+                            <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- クラップピッチベンド調節バー -->
+                        </div>
+                        <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
+                            <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- クラップ音量調節バー -->
+                        </div>
+                        <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
+                        <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                            <button class="record-button"></button> <!-- !ボタンを追加 -->
+                        </div>
+                        <div class="waveform-container">
+                            <canvas class="waveform" id="clap-waveform"></canvas>
+                            <div class="offset-handle"></div>
+                            <div class="end-offset-handle"></div>
+                            <div class="offset-overlay"></div>
+                            <div class="end-offset-overlay"></div>
+                        </div>
+                        <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
+                        <!-- クラップオフセット調節バー -->
+                        <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
+                        <!-- クラップ終了位置調節バー -->
                     </div>
-                    <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
-                        <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- クラップ音量調節バー -->
+                    <div class="track-steps">
+                        <button class="step"></button> <!-- クラップステップボタン -->
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
                     </div>
-                    <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
-                    <button class="step"></button> <!-- クラップステップボタン -->
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
-                        <button class="record-button"></button> <!-- !ボタンを追加 -->
-                    </div>
-                    <div class="waveform-container">
-                        <canvas class="waveform" id="clap-waveform"></canvas>
-                        <div class="offset-handle"></div>
-                        <div class="end-offset-handle"></div>
-                        <div class="offset-overlay"></div>
-                        <div class="end-offset-overlay"></div>
-                    </div>
-                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
-                    <!-- クラップオフセット調節バー -->
-                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
-                    <!-- クラップ終了位置調節バー -->
                 </div>
                 <div class="track hihat">
-                    <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
-                        <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- ハイハットピッチベンド調節バー -->
+                    <div class="track-controls">
+                        <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
+                            <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- ハイハットピッチベンド調節バー -->
+                        </div>
+                        <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
+                            <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- ハイハット音量調節バー -->
+                        </div>
+                        <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
+                        <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                            <button class="record-button"></button> <!-- !ボタンを追加 -->
+                        </div>
+                        <div class="waveform-container">
+                            <canvas class="waveform" id="hihat-waveform"></canvas>
+                            <div class="offset-handle"></div>
+                            <div class="end-offset-handle"></div>
+                            <div class="offset-overlay"></div>
+                            <div class="end-offset-overlay"></div>
+                        </div>
+                        <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
+                        <!-- ハイハットオフセット調節バー -->
+                        <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
+                        <!-- ハイハット終了位置調節バー -->
                     </div>
-                    <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
-                        <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- ハイハット音量調節バー -->
+                    <div class="track-steps">
+                        <button class="step"></button> <!-- ハイハットステップボタン -->
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
                     </div>
-                    <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
-                    <button class="step"></button> <!-- ハイハットステップボタン -->
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
-                        <button class="record-button"></button> <!-- !ボタンを追加 -->
-                    </div>
-                    <div class="waveform-container">
-                        <canvas class="waveform" id="hihat-waveform"></canvas>
-                        <div class="offset-handle"></div>
-                        <div class="end-offset-handle"></div>
-                        <div class="offset-overlay"></div>
-                        <div class="end-offset-overlay"></div>
-                    </div>
-                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
-                    <!-- ハイハットオフセット調節バー -->
-                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
-                    <!-- ハイハット終了位置調節バー -->
                 </div>
                 <div class="track bell">
-                    <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
-                        <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- ベルピッチベンド調節バー -->
+                    <div class="track-controls">
+                        <div class="control-wrapper pitch-wrapper has-tooltip" data-tooltip="ピッチ: x1.00">
+                            <input type="range" class="pitch-bend-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- ベルピッチベンド調節バー -->
+                        </div>
+                        <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
+                            <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
+                            <!-- ベル音量調節バー -->
+                        </div>
+                        <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
+                        <div class="control-wrapper has-tooltip" data-tooltip="録音">
+                            <button class="record-button"></button> <!-- !ボタンを追加 -->
+                        </div>
+                        <div class="waveform-container">
+                            <canvas class="waveform" id="bell-waveform"></canvas>
+                            <div class="offset-handle"></div>
+                            <div class="end-offset-handle"></div>
+                            <div class="offset-overlay"></div>
+                            <div class="end-offset-overlay"></div>
+                        </div>
+                        <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
+                        <!-- ベルオフセット調節バー -->
+                        <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
+                        <!-- ベル終了位置調節バー -->
                     </div>
-                    <div class="control-wrapper volume-wrapper has-tooltip" data-tooltip="音量: 50%">
-                        <input type="range" class="volume-control" min="0" max="1" step="0.01" value="0.5">
-                        <!-- ベル音量調節バー -->
+                    <div class="track-steps">
+                        <button class="step"></button> <!-- ベルステップボタン -->
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
+                        <button class="step"></button>
                     </div>
-                    <button class="mute-button has-tooltip" data-tooltip="ミュート"></button> <!-- ミュートボタンを追加 -->
-                    <button class="step"></button> <!-- ベルステップボタン -->
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <button class="step"></button>
-                    <div class="control-wrapper has-tooltip" data-tooltip="録音">
-                        <button class="record-button"></button> <!-- !ボタンを追加 -->
-                    </div>
-                    <div class="waveform-container">
-                        <canvas class="waveform" id="bell-waveform"></canvas>
-                        <div class="offset-handle"></div>
-                        <div class="end-offset-handle"></div>
-                        <div class="offset-overlay"></div>
-                        <div class="end-offset-overlay"></div>
-                    </div>
-                    <input type="range" class="offset-control" min="0" max="1" step="0.01" value="0">
-                    <!-- ベルオフセット調節バー -->
-                    <input type="range" class="end-offset-control" min="0" max="1" step="0.01" value="1">
-                    <!-- ベル終了位置調節バー -->
                 </div>
             </div>
         </div>
@@ -265,6 +311,12 @@
     </footer>
 
     <script src="script.js" type="module"></script> <!-- JavaScriptファイルのリンクを修正 -->
+    <script>
+        document.getElementById('hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
 </body>
 
 </html>

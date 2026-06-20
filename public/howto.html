@@ -192,6 +192,12 @@
             overflow: visible;
         }
 
+        .mock-track-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
         .mock-track-label {
             font-size: 12px;
             font-weight: 700;
@@ -226,7 +232,14 @@
         }
 
         .mock-dial::after {
-            content: '';
+            font-size: 7px;
+            font-weight: 800;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
             position: absolute;
             top: 50%;
             left: 50%;
@@ -234,9 +247,17 @@
             height: 20px;
             background: #ffffff;
             border-radius: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) rotate(90deg);
             box-shadow: 0 1px 3px rgba(148, 163, 184, 0.3);
             border: 1px solid #cbd5e1;
+        }
+
+        #mock-volume-dial::after {
+            content: 'VOL';
+        }
+
+        #mock-pitch-dial::after {
+            content: 'PIT';
         }
 
         .mock-dial-label {
@@ -539,6 +560,180 @@
             margin: 40px 0;
             border: none;
         }
+
+        /* Responsive Mobile Simulator Grid */
+        @media screen and (max-width: 768px) {
+            .mock-workspace {
+                padding: 12px 8px;
+            }
+
+            .mock-header {
+                display: grid !important;
+                grid-template-columns: auto 1fr auto auto !important;
+                grid-template-rows: auto auto !important;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .mock-left {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            .mock-center {
+                grid-column: 2;
+                grid-row: 1;
+                justify-self: start;
+            }
+
+            .mock-logo-text {
+                font-size: 11px !important;
+            }
+
+            .mock-right {
+                grid-column: 1 / span 4;
+                grid-row: 2;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .mock-track {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 10px;
+                gap: 8px 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .mock-track-label {
+                width: 48px;
+                min-width: 48px;
+                text-align: left;
+                margin-right: 4px;
+                font-size: 11px;
+            }
+
+            .mock-steps-wrapper {
+                flex: 1;
+                width: calc(100% - 52px);
+                box-sizing: border-box;
+            }
+
+            .mock-step-row {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+
+            .mock-step {
+                flex: 1 1 0%;
+                height: 38px;
+                width: auto !important;
+                border-radius: 8px;
+            }
+
+            .mock-step.sixteenth {
+                flex: 0 0 calc((100% - (7 * 4px)) / 8) !important;
+            }
+
+            .mock-step.triplet {
+                flex: 0 0 calc((100% - (5 * 4px)) / 6) !important;
+            }
+
+            .mock-track-controls {
+                width: 100%;
+                display: grid !important;
+                grid-template-columns: repeat(4, 40px) 1fr;
+                grid-template-rows: auto auto;
+                gap: 12px;
+                padding-top: 12px;
+                border-top: 1px dashed #e2e8f0;
+                margin-top: 4px;
+            }
+
+            /* Row 1: Waveform centered */
+            .mock-waveform-container {
+                grid-row: 1;
+                grid-column: 1 / span 5;
+                width: 85% !important;
+                max-width: 280px !important;
+                margin: 0 auto !important;
+                height: 48px;
+            }
+
+            .mock-waveform-canvas {
+                width: 100% !important;
+                height: 48px !important;
+                border-radius: 8px;
+            }
+
+            /* Row 2: buttons and dials */
+            .mock-dial-container {
+                grid-row: 2;
+                grid-column: 1 / span 2;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .mock-dial {
+                width: 40px !important;
+                height: 40px !important;
+            }
+
+            .mock-dial::after {
+                content: '';
+                width: 22px !important;
+                height: 22px !important;
+                font-size: 7.5px;
+                font-weight: 800;
+                color: #64748b;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-transform: uppercase;
+                transform: translate(-50%, -50%) rotate(90deg);
+            }
+
+            .mock-track-controls > div:nth-child(3) {
+                grid-row: 2;
+                grid-column: 3;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .mock-mute-button {
+                width: 40px !important;
+                height: 40px !important;
+                border-radius: 50% !important;
+            }
+
+            .mock-track-controls > .mock-control-wrapper:nth-child(4) {
+                grid-row: 2;
+                grid-column: 4;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .mock-record-button {
+                width: 40px !important;
+                height: 40px !important;
+                border-radius: 50% !important;
+            }
+        }
     </style>
 </head>
 
@@ -558,7 +753,12 @@
         <button id="export" class="export-button"></button> <!-- エクスポートボタン -->
     </header>
     <nav>
-        <ul>
+        <button class="hamburger-menu" id="hamburger-btn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <ul class="nav-links">
             <li><a href="index.html">HOME</a></li>
             <li><a href="howto.html">HOW TO</a></li>
             <li><a href="update.html">UPDATE</a></li>
@@ -624,34 +824,6 @@
                 <div class="mock-track">
                     <span class="mock-track-label">KICK</span>
 
-                    <div class="mock-dial-container">
-                        <!-- Pitch control dial -->
-                        <div class="mock-control-wrapper has-tooltip" data-tooltip="ピッチ: x1.00 (ドラッグして変更)"
-                            style="position: relative;">
-                            <div class="mock-dial" id="mock-pitch-dial" style="--value: 0.5;">
-                                <div class="mock-dial-knob"></div>
-                            </div>
-                            <span class="mock-dial-label">PITCH</span>
-                            <span class="mock-badge" style="top: -4px; left: -4px;">1</span>
-                        </div>
-
-                        <!-- Volume control dial -->
-                        <div class="mock-control-wrapper has-tooltip" data-tooltip="音量: 50% (ドラッグして変更)"
-                            style="position: relative;">
-                            <div class="mock-dial" id="mock-volume-dial" style="--value: 0.5;">
-                                <div class="mock-dial-knob"></div>
-                            </div>
-                            <span class="mock-dial-label">VOL</span>
-                            <span class="mock-badge" style="top: -4px; left: -4px;">2</span>
-                        </div>
-                    </div>
-
-                    <!-- Mute button -->
-                    <div style="position: relative; display: inline-block;">
-                        <button class="mock-mute-button has-tooltip" id="mock-mute-btn" data-tooltip="ミュート"></button>
-                        <span class="mock-badge" style="top: -4px; right: -4px;">3</span>
-                    </div>
-
                     <!-- Step sequencer buttons -->
                     <div class="mock-steps-wrapper has-tooltip" data-tooltip="ステップ (クリックでON/OFF)"
                         style="position: relative;">
@@ -668,22 +840,53 @@
                         <span class="mock-badge" style="top: -6px; left: -6px;">4</span>
                     </div>
 
-                    <!-- Record button -->
-                    <div class="mock-control-wrapper has-tooltip" data-tooltip="録音(この画面では録音されません)"
-                        style="position: relative;">
-                        <button class="mock-record-button" id="mock-record-btn"></button>
-                        <span class="mock-badge" style="top: -4px; right: -4px;">5</span>
-                    </div>
+                    <!-- Track controls container (Accordion panel mock) -->
+                    <div class="mock-track-controls">
+                        <!-- Waveform Offset controls -->
+                        <div class="mock-waveform-container has-tooltip" data-tooltip="トリム範囲 (ハンドルを左右にドラッグ)"
+                            style="position: relative;">
+                            <canvas class="mock-waveform-canvas" id="mock-waveform-canvas" width="100" height="40"></canvas>
+                            <div class="mock-offset-handle mock-left-handle" id="mock-left-handle"></div>
+                            <div class="mock-offset-handle mock-right-handle" id="mock-right-handle"></div>
+                            <div class="mock-offset-overlay mock-left-overlay" id="mock-left-overlay"></div>
+                            <div class="mock-offset-overlay mock-right-overlay" id="mock-right-overlay"></div>
+                            <span class="mock-badge" style="top: -6px; left: -6px;">6</span>
+                        </div>
 
-                    <!-- Waveform Offset controls -->
-                    <div class="mock-waveform-container has-tooltip" data-tooltip="トリム範囲 (ハンドルを左右にドラッグ)"
-                        style="position: relative;">
-                        <canvas class="mock-waveform-canvas" id="mock-waveform-canvas" width="100" height="40"></canvas>
-                        <div class="mock-offset-handle mock-left-handle" id="mock-left-handle"></div>
-                        <div class="mock-offset-handle mock-right-handle" id="mock-right-handle"></div>
-                        <div class="mock-offset-overlay mock-left-overlay" id="mock-left-overlay"></div>
-                        <div class="mock-offset-overlay mock-right-overlay" id="mock-right-overlay"></div>
-                        <span class="mock-badge" style="top: -6px; left: -6px;">6</span>
+                        <div class="mock-dial-container">
+                            <!-- Pitch control dial -->
+                            <div class="mock-control-wrapper has-tooltip" data-tooltip="ピッチ: x1.00 (ドラッグして変更)"
+                                style="position: relative;">
+                                <div class="mock-dial" id="mock-pitch-dial" style="--value: 0.5;">
+                                    <div class="mock-dial-knob"></div>
+                                </div>
+                                <span class="mock-dial-label">PITCH</span>
+                                <span class="mock-badge" style="top: -4px; left: -4px;">1</span>
+                            </div>
+
+                            <!-- Volume control dial -->
+                            <div class="mock-control-wrapper has-tooltip" data-tooltip="音量: 50% (ドラッグして変更)"
+                                style="position: relative;">
+                                <div class="mock-dial" id="mock-volume-dial" style="--value: 0.5;">
+                                    <div class="mock-dial-knob"></div>
+                                </div>
+                                <span class="mock-dial-label">VOL</span>
+                                <span class="mock-badge" style="top: -4px; left: -4px;">2</span>
+                            </div>
+                        </div>
+
+                        <!-- Mute button -->
+                        <div style="position: relative; display: inline-block;">
+                            <button class="mock-mute-button has-tooltip" id="mock-mute-btn" data-tooltip="ミュート"></button>
+                            <span class="mock-badge" style="top: -4px; right: -4px;">3</span>
+                        </div>
+
+                        <!-- Record button -->
+                        <div class="mock-control-wrapper has-tooltip" data-tooltip="録音(この画面では録音されません)"
+                            style="position: relative;">
+                            <button class="mock-record-button" id="mock-record-btn"></button>
+                            <span class="mock-badge" style="top: -4px; right: -4px;">5</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1156,6 +1359,12 @@
                     }
                 });
             });
+        });
+    </script>
+    <script>
+        document.getElementById('hamburger-btn').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
         });
     </script>
 </body>
