@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +10,539 @@
     <link rel="stylesheet" href="styles.css">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+    <style>
+        /* ============================================================================
+           How to Use - Interactive Tutorial Page Custom Styles
+           ============================================================================ */
+
+        .howto-container {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        /* Simulator Card Styles */
+        .simulator-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.08), 0 8px 10px -6px rgba(148, 163, 184, 0.04);
+            transition: border-color 0.3s;
+        }
+
+        .simulator-card-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .simulator-card-header h3 {
+            font-size: 20px;
+            margin: 0 0 8px 0;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .simulator-card-header p {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        /* Mock Workspace Mimicking VoiceBeats UI */
+        .mock-workspace {
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 850px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01);
+        }
+
+        .mock-header {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+
+        .mock-header:hover {
+            border-color: #cbd5e1;
+        }
+
+        .mock-left,
+        .mock-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mock-play-btn {
+            background-color: #60a5fa;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-image: url('sample/play.png');
+            background-size: 55%;
+            background-repeat: no-repeat;
+            background-position: center;
+            box-shadow: 0 2px 6px rgba(96, 165, 250, 0.2);
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .mock-play-btn.playing {
+            background-color: #cbd5e1;
+            background-image: url('sample/stop.png');
+            box-shadow: none;
+        }
+
+        .mock-logo-text {
+            font-weight: 700;
+            font-size: 14px;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+        }
+
+        .mock-bpm-display {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: ns-resize;
+            user-select: none;
+            position: relative;
+        }
+
+        .mock-dropdown {
+            position: relative;
+        }
+
+        .mock-dropbtn {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            padding: 5px 10px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            height: auto;
+            width: auto;
+            font-weight: 600;
+        }
+
+        .mock-export-button {
+            background-color: transparent;
+            border: 1px solid #e2e8f0;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background-image: url('sample/export.png');
+            background-size: 50%;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            filter: invert(53%) sepia(87%) saturate(1500%) hue-rotate(185deg) brightness(95%) contrast(95%);
+        }
+
+        .mock-export-button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* Mock Sequencer Track */
+        .mock-track {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+            overflow: visible;
+        }
+
+        .mock-track-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            min-width: 45px;
+        }
+
+        .mock-dial-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mock-control-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .mock-dial {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: conic-gradient(#93c5fd calc(var(--value) * 100%), #e2e8f0 0);
+            position: relative;
+            cursor: ns-resize;
+            transform: rotate(-90deg);
+            transition: transform 0.1s;
+        }
+
+        .mock-dial::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: #ffffff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 1px 3px rgba(148, 163, 184, 0.3);
+            border: 1px solid #cbd5e1;
+        }
+
+        .mock-dial-label {
+            font-size: 8px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .mock-mute-button {
+            width: 24px;
+            height: 24px;
+            background-color: #60a5fa;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+            background-size: 65%;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.2s;
+        }
+
+        .mock-mute-button.muted {
+            background-color: #e2e8f0;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+        }
+
+        .mock-steps-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .mock-step-row {
+            display: flex;
+            gap: 4px;
+        }
+
+        .mock-step {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background-color: #ffffff;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            pointer-events: auto;
+        }
+
+        .mock-step.triplet {
+            width: 20px;
+            border-radius: 4px;
+        }
+
+        .mock-step.sixteenth {
+            width: 15px;
+            border-radius: 3px;
+        }
+
+        .mock-step.active {
+            background: linear-gradient(135deg, #60a5fa, #93c5fd);
+            box-shadow: 0 2px 6px rgba(96, 165, 250, 0.25);
+        }
+
+        .mock-step.current {
+            box-shadow: inset 0 0 0 2px #0ea5e9, 0 0 6px rgba(14, 165, 233, 0.3);
+        }
+
+        .mock-step.active.current {
+            background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+            box-shadow: inset 0 0 0 1.5px #ffffff, 0 0 8px rgba(14, 165, 233, 0.4);
+        }
+
+
+
+        .mock-record-button {
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mock-record-button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('sample/rec.png');
+            background-size: 55%;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.85;
+            filter: invert(53%) sepia(87%) saturate(1500%) hue-rotate(185deg) brightness(95%) contrast(95%);
+        }
+
+        .mock-record-button.recording::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(56, 189, 248, 0.2);
+            animation: mock-fill 2s linear forwards;
+        }
+
+        .mock-waveform-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            height: 40px;
+            width: 100px;
+            user-select: none;
+        }
+
+        .mock-waveform-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .mock-offset-handle {
+            position: absolute;
+            width: 3px;
+            height: 100%;
+            background-color: rgba(37, 99, 235, 0.5);
+            cursor: ew-resize;
+            z-index: 2;
+        }
+
+        .mock-left-handle {
+            left: 10px;
+        }
+
+        .mock-right-handle {
+            right: 15px;
+        }
+
+        .mock-offset-overlay {
+            position: absolute;
+            height: 100%;
+            background-color: rgba(148, 163, 184, 0.2);
+            z-index: 1;
+        }
+
+        .mock-left-overlay {
+            left: 0;
+            width: 10px;
+        }
+
+        .mock-right-overlay {
+            right: 0;
+            width: 15px;
+        }
+
+        /* Tooltip layout overrides for mock */
+        .mock-workspace .has-tooltip::after {
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+
+        /* --- Mock Number Badges Styles --- */
+        .mock-badge {
+            position: absolute;
+            background: #10b981;
+            /* Premium Emerald Green */
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: bold;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);
+            border: 1px solid #ffffff;
+            pointer-events: none;
+            /* Pass clicks through to active elements */
+        }
+
+        /* Card Section Styles */
+        .how-to-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .how-to-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        .how-to-card:hover {
+            transform: translateY(-2px);
+            border-color: #93c5fd;
+            box-shadow: 0 10px 20px -3px rgba(148, 163, 184, 0.08), 0 4px 6px -4px rgba(148, 163, 184, 0.04);
+        }
+
+        .how-to-card.active-card {
+            border-color: #0ea5e9;
+            background: #f0f9ff;
+            box-shadow: 0 0 0 1px #0ea5e9, 0 10px 20px -3px rgba(14, 165, 233, 0.12);
+            animation: card-glow 1.5s infinite alternate;
+        }
+
+        @keyframes card-glow {
+            0% {
+                box-shadow: 0 0 0 1px #0ea5e9, 0 10px 20px -3px rgba(14, 165, 233, 0.12);
+            }
+
+            100% {
+                box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25), 0 10px 25px -3px rgba(14, 165, 233, 0.2);
+            }
+        }
+
+        .how-to-card-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #0ea5e9;
+            background: #e0f2fe;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .how-to-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .how-to-card p {
+            margin: 0 0 12px 0;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .how-to-card-tip {
+            font-size: 11px;
+            color: #0ea5e9;
+            background: #e0f2fe;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-weight: 600;
+        }
+
+        /* Pulsing indicator for mock controls */
+        .highlight-pulse {
+            animation: mock-glow 1s infinite alternate;
+        }
+
+        @keyframes mock-glow {
+            0% {
+                box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3);
+            }
+
+            100% {
+                box-shadow: 0 0 0 6px rgba(14, 165, 233, 0.7);
+            }
+        }
+
+        /* Section divider */
+        .section-divider {
+            width: 100%;
+            height: 1px;
+            background-color: #cbd5e1;
+            margin: 40px 0;
+            border: none;
+        }
+    </style>
 </head>
-<body class = "howto-body">
+
+<body class="howto-body">
     <header>
         <img src="sample/logo.png" alt="Logo" class="logo"> <!-- ロゴ画像を追加 -->
         <h1>Voice Beats</h1> <!-- ヘッダタイトル -->
@@ -33,61 +565,599 @@
             <li><a href="about.html">ABOUT</a></li>
         </ul>
     </nav>
-    <main>
-        <h2>概要説明</h2>
-        <hr class="separator" style="margin-bottom: 20px; width: 20%;">
-        <section>
-            <p>Voice Beatsは、「いつでもどこでも作曲を」というモットーのもと制作された、web上で動くサンプラーです！</p>
+    <main class="howto-container">
+
+        <!-- ============================================================================
+             Overview Section
+             ============================================================================ -->
+        <section class="section-header">
+            <h2>Voice Beats とは？</h2>
+            <hr class="separator" style="margin: 15px auto 25px auto; width: 80px;">
+            <p>Voice Beatsは、「いつでもどこでも作曲を」というモットーのもと制作された、ブラウザ上で動作する高機能Webサンプラーです！<br>
+                マイクを使って自分の声を直接録音し、瞬時にビートに組み込んでオリジナルのドラムトラックを制作できます。</p>
         </section>
-        <h2>使い方</h2>
-        <hr class="separator" style="margin-bottom: 20px; width: 20%;">
-        <section>
-            <div style="display: flex; justify-content: center; align-items: flex-start;">
-                <div style="display: flex; flex-direction: column; margin-right: 20px; margin-top: 50px;">
-                    <img src="sample/howto1.jpg" alt="How to use image 1" class="howto-image" style="width: 100%; height: auto; margin-bottom: 20px;">
-                    <img src="sample/howto2.png" alt="How to use image 2" class="howto-image" style="width: 50%; height: auto; margin-left: 25%;">
+
+        <hr class="section-divider">
+
+        <!-- ============================================================================
+             Interactive Simulator Section
+             ============================================================================ -->
+        <section class="simulator-card">
+            <div class="simulator-card-header">
+                <h3>クイックシミュレーター</h3>
+                <p>各コントロールの緑色の番号（①〜⑩）が下の解説カードに対応しています。実際にドラッグやクリック操作も可能です！</p>
+            </div>
+
+            <div class="mock-workspace">
+                <!-- Header Control Mockup -->
+                <div class="mock-header">
+                    <div class="mock-left">
+                        <div style="position: relative; display: inline-block;">
+                            <button id="mock-play" class="mock-play-btn has-tooltip"
+                                data-tooltip="再生 (この画面では音は出ません)"></button>
+                            <span class="mock-badge" style="top: -4px; right: -4px;">7</span>
+                        </div>
+                    </div>
+                    <div class="mock-center">
+                        <span class="mock-logo-text">SIMULATOR VOICE BEATS</span>
+                    </div>
+                    <div class="mock-right">
+                        <div style="position: relative; display: inline-block;">
+                            <div id="mock-bpm-display" class="mock-bpm-display has-tooltip"
+                                data-tooltip="BPM: 128 (上下にドラッグ / クリック)">♩=128</div>
+                            <span class="mock-badge" style="top: -6px; left: -6px;">8</span>
+                        </div>
+                        <div class="mock-dropdown has-tooltip" data-tooltip="リズムの細かさ"
+                            style="position: relative; display: inline-block;">
+                            <button class="mock-dropbtn" id="mock-res-btn">1/8</button>
+                            <span class="mock-badge" style="top: -6px; left: -6px;">9</span>
+                        </div>
+                        <div class="has-tooltip" data-tooltip="エクスポート（この画面では無効です）"
+                            style="position: relative; display: inline-block;">
+                            <button id="mock-export" class="mock-export-button" disabled></button>
+                            <span class="mock-badge" style="top: -4px; right: -4px;">10</span>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <h3>①ピッチベンド</h3>
-                    <p>各トラックのピッチを上下にずらすことができます。</p>
-                    <h3>②ボリュームコントロール</h3>
-                    <p>各トラックのボリュームを調節できます。</p>
-                    <h3>③ミュート</h3>
-                    <p>各トラックをミュートにすることができます。</p>
-                    <p>ミュートボタンが緑のとき、トラックは再生されます。</p>
-                    <h3>④ステップ</h3>
-                    <p>ステップをクリックすることでステップの音が出るかどうかを切り替えられます。</p>
-                    <h3>⑤録音</h3>
-                    <p>録音ボタンをクリックすることで、トラックで再生する音を録音できます。</p>
-                    <h3>⑥トラックの波形表示とオフセットの調整</h3>
-                    <p>各トラックのファイルがどこからどこまで再生されるか調節することができます。</p>
-                    <h3>⑦再生</h3>
-                    <p>再生ボタンをクリックすることで、トラックを再生できます。</p>
-                    <h3>⑧BPM変更</h3>
-                    <p>テンポを変更することができます。</p>
-                    <h3>⑨リズムの細かさの変更</h3>
-                    <p>1/8、1/8T、1/16から、リズムの細かさを選べます。</p>
-                    <h3>⑩エクスポート</h3>
-                    <p>エクスポートボタンをクリックすることで、作成した音楽をwav形式でダウンロードできます。</p>
+
+                <!-- Sequencer Track Control Mockup -->
+                <div class="mock-track">
+                    <span class="mock-track-label">KICK</span>
+
+                    <div class="mock-dial-container">
+                        <!-- Pitch control dial -->
+                        <div class="mock-control-wrapper has-tooltip" data-tooltip="ピッチ: x1.00 (ドラッグして変更)"
+                            style="position: relative;">
+                            <div class="mock-dial" id="mock-pitch-dial" style="--value: 0.5;">
+                                <div class="mock-dial-knob"></div>
+                            </div>
+                            <span class="mock-dial-label">PITCH</span>
+                            <span class="mock-badge" style="top: -4px; left: -4px;">1</span>
+                        </div>
+
+                        <!-- Volume control dial -->
+                        <div class="mock-control-wrapper has-tooltip" data-tooltip="音量: 50% (ドラッグして変更)"
+                            style="position: relative;">
+                            <div class="mock-dial" id="mock-volume-dial" style="--value: 0.5;">
+                                <div class="mock-dial-knob"></div>
+                            </div>
+                            <span class="mock-dial-label">VOL</span>
+                            <span class="mock-badge" style="top: -4px; left: -4px;">2</span>
+                        </div>
+                    </div>
+
+                    <!-- Mute button -->
+                    <div style="position: relative; display: inline-block;">
+                        <button class="mock-mute-button has-tooltip" id="mock-mute-btn" data-tooltip="ミュート"></button>
+                        <span class="mock-badge" style="top: -4px; right: -4px;">3</span>
+                    </div>
+
+                    <!-- Step sequencer buttons -->
+                    <div class="mock-steps-wrapper has-tooltip" data-tooltip="ステップ (クリックでON/OFF)"
+                        style="position: relative;">
+                        <div class="mock-step-row" id="mock-step-row">
+                            <button class="mock-step active"></button>
+                            <button class="mock-step"></button>
+                            <button class="mock-step"></button>
+                            <button class="mock-step"></button>
+                            <button class="mock-step active"></button>
+                            <button class="mock-step"></button>
+                            <button class="mock-step"></button>
+                            <button class="mock-step"></button>
+                        </div>
+                        <span class="mock-badge" style="top: -6px; left: -6px;">4</span>
+                    </div>
+
+                    <!-- Record button -->
+                    <div class="mock-control-wrapper has-tooltip" data-tooltip="録音(この画面では録音されません)"
+                        style="position: relative;">
+                        <button class="mock-record-button" id="mock-record-btn"></button>
+                        <span class="mock-badge" style="top: -4px; right: -4px;">5</span>
+                    </div>
+
+                    <!-- Waveform Offset controls -->
+                    <div class="mock-waveform-container has-tooltip" data-tooltip="トリム範囲 (ハンドルを左右にドラッグ)"
+                        style="position: relative;">
+                        <canvas class="mock-waveform-canvas" id="mock-waveform-canvas" width="100" height="40"></canvas>
+                        <div class="mock-offset-handle mock-left-handle" id="mock-left-handle"></div>
+                        <div class="mock-offset-handle mock-right-handle" id="mock-right-handle"></div>
+                        <div class="mock-offset-overlay mock-left-overlay" id="mock-left-overlay"></div>
+                        <div class="mock-offset-overlay mock-right-overlay" id="mock-right-overlay"></div>
+                        <span class="mock-badge" style="top: -6px; left: -6px;">6</span>
+                    </div>
                 </div>
             </div>
         </section>
-    <h2>注意事項</h2>
-    <hr class="separator" style="margin-bottom: 20px; width: 20%;">
-    <section>
-        <p style="display: flex; justify-content: center; align-items: flex-start;">当サイトでデフォルトに設定された音源は、サイト作成者自身の肉声を加工したものです。</p>
-        <p style="display: flex; justify-content: center; align-items: flex-start;">そのため、ユーザ様ご自身の楽曲に利用することは全く問題ありません。</p>
-        <p style="display: flex; justify-content: center; align-items: flex-start;">ただし、当サイトでデフォルトに設定された音源素材の著作権を主張したり、音源素材を再配布したりすることをかたく禁止させていただきます。</p>
-    </section>
-    <h2>免責事項</h2>
-    <hr class="separator" style="margin-bottom: 20px; width: 20%;">
-    <section>
-        <p>当サイトを利用したことによるいかなる損害に対しても、当サイトは一切の責任を負いません。</p>
-        <p>また、当サイトの利用によって生じたいかなる問題に対しても、当サイトは一切の責任を負いません。</p>
-    </section>
+
+        <!-- ============================================================================
+             Explanations Grid Section
+             ============================================================================ -->
+        <section class="section-header">
+            <h2>機能の使い方解説</h2>
+            <hr class="separator" style="margin: 15px auto 25px auto; width: 80px;">
+        </section>
+
+        <div class="how-to-grid">
+            <!-- 1. Pitch Bend -->
+            <div class="how-to-card" id="desc-pitch">
+                <span class="how-to-card-badge">サウンド調整</span>
+                <h3>① ピッチベンド</h3>
+                <p>各トラックのピッチ（音の高さ）を上下にずらします。つまみを回すことで最大2倍速（高音）、または低音に調整して、ドラムパーツのキャラクターを自由に変更できます。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 PITCHダイヤルを上下にドラッグして回してみましょう！</span>
+                </div>
+            </div>
+
+            <!-- 2. Volume Control -->
+            <div class="how-to-card" id="desc-volume">
+                <span class="how-to-card-badge">サウンド調整</span>
+                <h3>② ボリュームコントロール</h3>
+                <p>各トラックごとの音量を個別に調節できます。バッキング用のハイハットを抑えめにし、主役のキックやスネアを引き立たせるなど、適切なミックスバランスが作れます。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 VOLダイヤルを上下にドラッグして回してみましょう！</span>
+                </div>
+            </div>
+
+            <!-- 3. Mute -->
+            <div class="how-to-card" id="desc-mute">
+                <span class="how-to-card-badge">サウンド調整</span>
+                <h3>③ ミュート</h3>
+                <p>各トラックを一時的に消音（ミュート）にします。ミュートボタンが青く点灯している間は音が鳴り、クリックして灰色に消灯すると消音されます。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 スピーカーアイコンのミュートボタンをクリックしてみましょう！</span>
+                </div>
+            </div>
+
+            <!-- 4. Step Sequencer -->
+            <div class="how-to-card" id="desc-steps">
+                <span class="how-to-card-badge">シーケンサー</span>
+                <h3>④ ステップ入力</h3>
+                <p>マス（ステップ）をクリックして、音が鳴るタイミングを指示します。青く点灯しているタイミングでそのトラックの音源が再生されます。直感的に様々なリズムパターンを作れます。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 シミュレーターの白いステップをクリックして光らせてみましょう！</span>
+                </div>
+            </div>
+
+            <!-- 5. Recording -->
+            <div class="how-to-card" id="desc-record">
+                <span class="how-to-card-badge">サンプリング</span>
+                <h3>⑤ 録音</h3>
+                <p>マイク入力から、あなた自身の声や身の回りの音（クラップや口で出す音など）を最大4拍分録音できます。録音された音は、そのトラックの再生素材として自動的にセットされます。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 録音ボタンをクリックするとシミュレーションゲージが満たされます！</span>
+                </div>
+            </div>
+
+            <!-- 6. Trim & Offset -->
+            <div class="how-to-card" id="desc-waveform">
+                <span class="how-to-card-badge">トリミング</span>
+                <h3>⑥ トリム・オフセット調整</h3>
+                <p>波形ビジュアル上の左右にある青いトリムハンドル（▶︎, ◀︎）をドラッグして、音源ファイルの再生開始位置と終了位置を精密に切り出すことができます。余計な無音部分のカットに最適です。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 波形キャンバス内の三角ハンドルをドラッグしてトリム位置を変えてみましょう！</span>
+                </div>
+            </div>
+
+            <!-- 7. Play -->
+            <div class="how-to-card" id="desc-play">
+                <span class="how-to-card-badge">再生コントロール</span>
+                <h3>⑦ 再生 / 停止</h3>
+                <p>シーケンサー全体の再生と停止を切り替えます。再生中はタイムライン上のインジケーター（縦線）がステップの上を駆け巡り、アクティブなステップの音が発音されます。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 シミュレーターの再生ボタンを押してインジケーターを走らせてみましょう！</span>
+                </div>
+            </div>
+
+            <!-- 8. BPM -->
+            <div class="how-to-card" id="desc-bpm">
+                <span class="how-to-card-badge">テンポ</span>
+                <h3>⑧ BPM変更</h3>
+                <p>楽曲のテンポ（BPM）を 60 〜 200 の間で調整します。「♩=128」の表示部分を上下にドラッグするか、端の矢印をクリックすることでテンポを精密に変更できます。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 BPM表示部分を上下にドラッグするか、端の矢印をクリックしてみましょう！</span>
+                </div>
+            </div>
+
+            <!-- 9. Rhythm Resolution -->
+            <div class="how-to-card" id="desc-resolution">
+                <span class="how-to-card-badge">グリッド</span>
+                <h3>⑨ リズム解像度の変更</h3>
+                <p>1/8（8分音符）、1/8T（3連符）、1/16（16分音符）からリズムグリッドの細かさを選べます。1/16を選択すると1小節内のステップが16マスになり、より複雑で細かいドラムロールが刻めます。
+                </p>
+                <div class="how-to-card-tip">
+                    <span>💡 シミュレーターの「1/8」ボタンをクリックして切り替えてみましょう！</span>
+                </div>
+            </div>
+
+            <!-- 10. Export -->
+            <div class="how-to-card" id="desc-export">
+                <span class="how-to-card-badge">書き出し</span>
+                <h3>⑩ WAVエクスポート</h3>
+                <p>作成したループビートを、劣化のない高音質な WAV 形式ファイルとして自動でエンコードしてエクスポート（ダウンロード）できます。他の音楽制作ソフト（DAW）に読み込ませて曲作りに活用できます。</p>
+                <div class="how-to-card-tip">
+                    <span>💡 エクスポートボタンをクリックして進行状況バーの演出を確認してみましょう！</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================================
+             Rules & Disclaimer Section
+             ============================================================================ -->
+        <hr class="section-divider">
+
+        <section class="section-header">
+            <h2>注意事項 & 免責事項</h2>
+            <hr class="separator" style="margin: 15px auto 25px auto; width: 80px;">
+        </section>
+
+        <div style="max-width: 800px; margin: 0 auto 50px auto; color: #475569; line-height: 1.8; font-size: 14px;">
+            <div
+                style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+                <h4 style="color: #1e293b; margin-top: 0; font-size: 15px; font-weight: 700;">⚠ 注意事項</h4>
+                <p style="margin: 0;">
+                    当サイトにデフォルトで設定されているドラム音源は、すべてサイト制作者自身の肉声を加工して制作されたオリジナル素材です。ユーザー様がご自身の商用・非商用の楽曲や動画などの制作活動にこれらの音源利用することは一切問題ありません。<br>
+                    ただし、デフォルトの音源素材の著作権を独自に主張することや、音源素材単体としての再配布・販売は固く禁止いたします。</p>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px;">
+                <h4 style="color: #1e293b; margin-top: 0; font-size: 15px; font-weight: 700;">⚖ 免責事項</h4>
+                <p style="margin: 0;">
+                    当サイトの利用により生じたいかなる直接的・間接的トラブル、損失、損害に対しても、当サイトおよび運営者は一切の責任を負いません。ご利用のブラウザ環境（特にプライバシー設定やメモリ制限）によってはFFmpegエンコードやマイク入力が正しく動作しない場合がありますので、予めご了承ください。
+                </p>
+            </div>
+        </div>
     </main>
+
     <footer class="howto-footer">
         <p>&copy; 2024 Mayday</p> <!-- フッタ -->
     </footer>
+
+    <!-- ============================================================================
+         Interactive Tutorial Script
+         ============================================================================ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. Step Highlight Player (Play Simulator) ---
+            let isPlaying = false;
+            let currentStepIdx = 0;
+            let playbackTimeoutId = null;
+            let bpmValue = 128;
+
+            const mockPlayBtn = document.getElementById('mock-play');
+
+            function getMockSteps() {
+                return document.querySelectorAll('.mock-step');
+            }
+
+            function playNextStep() {
+                if (!isPlaying) return;
+
+                const mockSteps = getMockSteps();
+                const stepCount = mockSteps.length;
+
+                mockSteps.forEach((step, idx) => {
+                    if (idx === currentStepIdx) {
+                        step.classList.add('current');
+                    } else {
+                        step.classList.remove('current');
+                    }
+                });
+
+                currentStepIdx = (currentStepIdx + 1) % stepCount;
+
+                // Determine interval duration in ms based on resolution and BPM
+                let intervalMultiplier = 1;
+                const mockResBtn = document.getElementById('mock-res-btn');
+                const precision = mockResBtn.textContent;
+
+                if (precision === '1/16') intervalMultiplier = 0.5;
+                else if (precision === '1/8T') intervalMultiplier = 2 / 3;
+
+                const stepDurationMs = (30000 / bpmValue) * intervalMultiplier;
+
+                playbackTimeoutId = setTimeout(playNextStep, stepDurationMs);
+            }
+
+            mockPlayBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isPlaying = !isPlaying;
+                mockPlayBtn.classList.toggle('playing', isPlaying);
+
+                if (isPlaying) {
+                    mockPlayBtn.setAttribute('data-tooltip', '停止');
+                    currentStepIdx = 0;
+                    playNextStep();
+                } else {
+                    mockPlayBtn.setAttribute('data-tooltip', '再生（この画面では音は出ません）');
+                    clearTimeout(playbackTimeoutId);
+                    playbackTimeoutId = null;
+                    getMockSteps().forEach(s => s.classList.remove('current'));
+                }
+            });
+
+            // --- 2. Step Buttons Clicking ---
+            getMockSteps().forEach(step => {
+                step.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    step.classList.toggle('active');
+                });
+            });
+
+            // --- 3. Mute Button Clicking ---
+            const mockMuteBtn = document.getElementById('mock-mute-btn');
+            mockMuteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isMuted = mockMuteBtn.classList.toggle('muted');
+                mockMuteBtn.setAttribute('data-tooltip', isMuted ? 'ミュート解除' : 'ミュート');
+            });
+
+            // --- 4. Record Button Clicking (Microphone Sampling simulator) ---
+            const mockRecordBtn = document.getElementById('mock-record-btn');
+            mockRecordBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (mockRecordBtn.classList.contains('recording')) {
+                    mockRecordBtn.classList.remove('recording');
+                    mockRecordBtn.parentElement.setAttribute('data-tooltip', '録音(この画面では録音されません)');
+                } else {
+                    mockRecordBtn.classList.add('recording');
+                    mockRecordBtn.parentElement.setAttribute('data-tooltip', '録音中 (この画面では録音されません)');
+
+                    // Stop simulated recording after 2 seconds
+                    setTimeout(() => {
+                        mockRecordBtn.classList.remove('recording');
+                        mockRecordBtn.parentElement.setAttribute('data-tooltip', '録音(この画面では録音されません)');
+                    }, 2000);
+                }
+            });
+
+
+
+            // --- 6. Grid Resolution Dropdown Simulation ---
+            const mockResBtn = document.getElementById('mock-res-btn');
+            const precisions = ['1/8', '1/8T', '1/16'];
+            let currentPrecisionIdx = 0;
+            mockResBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentPrecisionIdx = (currentPrecisionIdx + 1) % precisions.length;
+                const nextPrecision = precisions[currentPrecisionIdx];
+                mockResBtn.textContent = nextPrecision;
+
+                // Dynamically change simulated step count
+                const stepRow = document.getElementById('mock-step-row');
+                stepRow.innerHTML = '';
+
+                let stepCount = 8;
+                let stepClass = '';
+                if (nextPrecision === '1/8T') {
+                    stepCount = 12;
+                    stepClass = 'triplet';
+                } else if (nextPrecision === '1/16') {
+                    stepCount = 16;
+                    stepClass = 'sixteenth';
+                }
+
+                for (let i = 0; i < stepCount; i++) {
+                    const stepBtn = document.createElement('button');
+                    stepBtn.className = 'mock-step ' + stepClass;
+                    // pre-activate first and middle beats to make it look musical
+                    if (i === 0 || i === Math.floor(stepCount / 2)) {
+                        stepBtn.classList.add('active');
+                    }
+                    stepBtn.addEventListener('click', (se) => {
+                        se.stopPropagation();
+                        stepBtn.classList.toggle('active');
+                    });
+                    stepRow.appendChild(stepBtn);
+                }
+
+                // Reset playback step index
+                currentStepIdx = 0;
+            });
+
+            // --- 7. Pitch and Volume Dial Drag Adjustments ---
+            function setupDial(dialId, type) {
+                const dial = document.getElementById(dialId);
+                let startY = 0;
+                let startVal = 0.5;
+
+                dial.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startY = e.clientY;
+                    startVal = parseFloat(dial.style.getPropertyValue('--value')) || 0.5;
+
+                    const onMouseMove = (moveEvent) => {
+                        const deltaY = startY - moveEvent.clientY;
+                        // Map vertical drag of 150px to 0.0 - 1.0 range
+                        const newValue = Math.min(1.0, Math.max(0.0, startVal + deltaY / 150));
+                        dial.style.setProperty('--value', newValue);
+
+                        // Update dynamic tooltips mimicking application behavior
+                        let tooltipText = "";
+                        if (type === 'pitch') {
+                            const speed = (newValue * 2).toFixed(2);
+                            tooltipText = `ピッチ: x${speed} (ドラッグして変更)`;
+                        } else {
+                            const pct = Math.round(newValue * 100);
+                            tooltipText = `音量: ${pct}% (ドラッグして変更)`;
+                        }
+                        dial.parentElement.setAttribute('data-tooltip', tooltipText);
+                    };
+
+                    const onMouseUp = () => {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    };
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+            }
+
+            setupDial('mock-pitch-dial', 'pitch');
+            setupDial('mock-volume-dial', 'volume');
+
+            // --- 8. BPM Dragging Simulation ---
+            const mockBpmDisplay = document.getElementById('mock-bpm-display');
+            mockBpmDisplay.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const startY = e.clientY;
+                const startBpm = bpmValue;
+
+                const onMouseMove = (moveEvent) => {
+                    const deltaY = startY - moveEvent.clientY;
+                    bpmValue = Math.min(200, Math.max(60, startBpm + deltaY));
+                    mockBpmDisplay.textContent = `♩=${bpmValue}`;
+                    mockBpmDisplay.setAttribute('data-tooltip', `BPM: ${bpmValue} (上下にドラッグ / クリック)`);
+                };
+
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            mockBpmDisplay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Alternates between 80, 128, 160 on clicks as a simple fallback
+                if (bpmValue === 128) bpmValue = 160;
+                else if (bpmValue === 160) bpmValue = 80;
+                else bpmValue = 128;
+
+                mockBpmDisplay.textContent = `♩=${bpmValue}`;
+                mockBpmDisplay.setAttribute('data-tooltip', `BPM: ${bpmValue} (上下にドラッグ / クリック)`);
+            });
+
+            // --- 9. Waveform Trimming Handles Dragging ---
+            const canvas = document.getElementById('mock-waveform-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Draw visual representation of drum transient audio wave
+            ctx.fillStyle = '#0ea5e9';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < canvas.width; i++) {
+                // Generate a drum-hit envelope with sharp transient followed by decay
+                const decay = Math.exp(-i / 20);
+                const noise = (Math.sin(i * 0.4) + Math.cos(i * 0.9)) * 12 * decay;
+                const rand = (Math.random() - 0.5) * 3 * decay;
+                const h = Math.max(1, Math.abs(noise + rand));
+                ctx.fillRect(i, 20 - h / 2, 1, h);
+            }
+
+            const leftHandle = document.getElementById('mock-left-handle');
+            const rightHandle = document.getElementById('mock-right-handle');
+            const leftOverlay = document.getElementById('mock-left-overlay');
+            const rightOverlay = document.getElementById('mock-right-overlay');
+            const waveContainer = canvas.parentElement;
+
+            function bindTrimHandle(handle, overlay, side) {
+                handle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const rect = waveContainer.getBoundingClientRect();
+
+                    const onMouseMove = (moveEvent) => {
+                        if (side === 'left') {
+                            const x = Math.min(Math.max(0, moveEvent.clientX - rect.left), rect.width - 25);
+                            handle.style.left = `${x}px`;
+                            overlay.style.width = `${x}px`;
+                        } else {
+                            const x = Math.min(Math.max(0, rect.right - moveEvent.clientX), rect.width - 25);
+                            handle.style.right = `${x}px`;
+                            overlay.style.width = `${x}px`;
+                        }
+                    };
+
+                    const onMouseUp = () => {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    };
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+            }
+            bindTrimHandle(leftHandle, leftOverlay, 'left');
+            bindTrimHandle(rightHandle, rightOverlay, 'right');
+
+            // --- 10. Cards clicking triggers glow highlight on matching mockup item ---
+            const cards = document.querySelectorAll('.how-to-grid .how-to-card');
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    cards.forEach(c => c.classList.remove('active-card'));
+                    card.classList.add('active-card');
+
+                    // Maps card id to a class selector to highlight the correct mockup control wrapper
+                    let targetSelector = "";
+                    switch (card.id) {
+                        case 'desc-pitch':
+                            targetSelector = '#mock-pitch-dial';
+                            break;
+                        case 'desc-volume':
+                            targetSelector = '#mock-volume-dial';
+                            break;
+                        case 'desc-mute':
+                            targetSelector = '#mock-mute-btn';
+                            break;
+                        case 'desc-steps':
+                            targetSelector = '.mock-steps-wrapper';
+                            break;
+                        case 'desc-record':
+                            targetSelector = '#mock-record-btn';
+                            break;
+                        case 'desc-waveform':
+                            targetSelector = '.mock-waveform-container';
+                            break;
+                        case 'desc-play':
+                            targetSelector = '#mock-play';
+                            break;
+                        case 'desc-bpm':
+                            targetSelector = '#mock-bpm-display';
+                            break;
+                        case 'desc-resolution':
+                            targetSelector = '#mock-res-btn';
+                            break;
+                        case 'desc-export':
+                            targetSelector = '#mock-export';
+                            break;
+                    }
+
+                    const mockEl = document.querySelector(targetSelector);
+                    if (mockEl) {
+                        mockEl.classList.add('highlight-pulse');
+                        mockEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => {
+                            mockEl.classList.remove('highlight-pulse');
+                        }, 2000);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
+
 </html>
