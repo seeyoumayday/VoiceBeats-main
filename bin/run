@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# このスクリプトのあるディレクトリを取得
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_DIR="$( dirname "$SCRIPT_DIR" )"
+
+# sourceディレクトリに移動
+cd "$PROJECT_DIR/source" || exit 1
+
+PORT=8000
+URL="http://localhost:$PORT"
+
+echo "============================================="
+echo " Voice Beats を起動しています..."
+echo " ブラウザで $URL を自動的に開きます。"
+echo "============================================="
+
+# ブラウザをバックグラウンドで1秒後に開く（サーバー起動を待つため）
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  (sleep 1 && open "$URL") &
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  (sleep 1 && xdg-open "$URL") &
+fi
+
+# サーバーの起動
+if command -v python3 >/dev/null 2>&1; then
+  echo "[INFO] Python 3 を検出しました。カスタムサーバー(bin/server.py)を起動します。"
+  python3 "$SCRIPT_DIR/server.py"
+elif command -v node >/dev/null 2>&1; then
+  echo "[INFO] Node.js を検出しました。カスタムサーバー(bin/server.js)を起動します。"
+  node "$SCRIPT_DIR/server.js"
+elif command -v python >/dev/null 2>&1; then
+  echo "[INFO] Python を検出しました。"
+  if python -c "import sys; sys.exit(0 if sys.version_info[0] >= 3 else 1)" >/dev/null 2>&1; then
+    python "$SCRIPT_DIR/server.py"
+  else
+    echo "[WARNING] Python 2 が検出されました。SharedArrayBufferヘッダーをサポートするためにPython 3またはNode.jsを推奨します。通常のサーバーとして起動します。"
+    python -m SimpleHTTPServer $PORT
+  fi
+else
+  echo "[ERROR] Python または Node.js が見つかりませんでした。"
+  echo "Voice Beats はセキュリティ上の理由（SharedArrayBufferの利用）から、ローカルサーバー経由で起動する必要があります。"
+  echo "Python または Node.js をインストールしてから再度実行してください。"
+  exit 1
+fi
