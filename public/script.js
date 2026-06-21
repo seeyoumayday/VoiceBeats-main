@@ -689,6 +689,15 @@ tracks.forEach(track => {
         tracks.forEach(t => t.recordButton.disabled = true);
         track.recordButton.disabled = false;
 
+        // Switch iOS audio session to play-and-record to allow microphone input
+        if (navigator.audioSession) {
+            try {
+                navigator.audioSession.type = 'play-and-record';
+            } catch (e) {
+                console.warn('Failed to set audio session type to play-and-record:', e);
+            }
+        }
+
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
                 // Determine supported MIME type for recording (especially for iOS Safari compatibility)
@@ -717,6 +726,15 @@ tracks.forEach(track => {
                         // Release microphone device
                         if (stream) {
                             stream.getTracks().forEach(t => t.stop());
+                        }
+
+                        // Restore audio session to playback
+                        if (navigator.audioSession) {
+                            try {
+                                navigator.audioSession.type = 'playback';
+                            } catch (e) {
+                                console.warn('Failed to restore audio session type to playback:', e);
+                            }
                         }
 
                         const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || "audio/wav" });
