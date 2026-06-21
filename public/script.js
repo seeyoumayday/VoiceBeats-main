@@ -915,6 +915,17 @@ exportButton.addEventListener("click", async () => {
         }
     };
 
+    exportRecorder.onstart = () => {
+        isExporting = true;
+        exportStepCount = 0;
+        exportEndTime = 0;
+        currentStep = 0;
+        nextNoteTime = audioContext.currentTime;
+
+        // Launch scheduler loop for capturing
+        schedulerTimerId = setInterval(scheduler, lookahead);
+    };
+
     exportRecorder.onstop = async () => {
         const blob = new Blob(exportChunks, { type: "audio/webm" });
         try {
@@ -946,15 +957,6 @@ exportButton.addEventListener("click", async () => {
     const bpm = parseFloat(bpmControl.value) || 120;
     const fillDuration = (30000 / bpm) * stepsPerBeat / 1000;
     exportButton.style.setProperty('--fill-duration', `${fillDuration}s`);
-
-    isExporting = true;
-    exportStepCount = 0;
-    exportEndTime = 0;
-    currentStep = 0;
-    nextNoteTime = audioContext.currentTime;
-
-    // Launch scheduler loop for capturing
-    schedulerTimerId = setInterval(scheduler, lookahead);
 });
 
 function stopExporting() {
