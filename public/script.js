@@ -90,6 +90,7 @@ let isExporting = false;
 let exportStepCount = 0;
 let exportRecorder = null;
 let exportChunks = [];
+let exportEndTime = 0;
 
 // ============================================================================
 // Audio Graph & Buffer Setup
@@ -199,7 +200,15 @@ function playSound(track, time) {
  * within the look-ahead window.
  */
 function scheduler() {
+    if (isExporting && exportEndTime > 0 && audioContext.currentTime >= exportEndTime) {
+        stopExporting();
+        return;
+    }
+
     while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
+        if (isExporting && exportEndTime > 0) {
+            break;
+        }
         scheduleNote(currentStep, nextNoteTime);
         advanceNote();
     }
@@ -242,7 +251,7 @@ function advanceNote() {
     if (isExporting) {
         exportStepCount++;
         if (exportStepCount >= stepsPerBeat) {
-            stopExporting();
+            exportEndTime = nextNoteTime;
         }
     }
 }
@@ -934,6 +943,7 @@ exportButton.addEventListener("click", async () => {
 
     isExporting = true;
     exportStepCount = 0;
+    exportEndTime = 0;
     currentStep = 0;
     nextNoteTime = audioContext.currentTime;
 
@@ -943,6 +953,7 @@ exportButton.addEventListener("click", async () => {
 
 function stopExporting() {
     isExporting = false;
+    exportEndTime = 0;
     clearInterval(schedulerTimerId);
     schedulerTimerId = null;
 
