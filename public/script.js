@@ -865,7 +865,7 @@ tracks.forEach(track => {
 // WAV Export Logic (via ffmpeg.wasm)
 // ============================================================================
 
-async function convertWebmToWav(webmBlob) {
+async function convertWebmToWav(webmBlob, duration) {
     const { createFFmpeg, fetchFile } = FFmpeg;
     const ffmpeg = createFFmpeg({
         log: true,
@@ -873,7 +873,11 @@ async function convertWebmToWav(webmBlob) {
     });
     await ffmpeg.load();
     ffmpeg.FS('writeFile', 'input.webm', await fetchFile(webmBlob));
-    await ffmpeg.run('-i', 'input.webm', 'output.wav');
+    if (duration) {
+        await ffmpeg.run('-i', 'input.webm', '-t', duration.toString(), 'output.wav');
+    } else {
+        await ffmpeg.run('-i', 'input.webm', 'output.wav');
+    }
     const data = ffmpeg.FS('readFile', 'output.wav');
     const wavBlob = new Blob([data.buffer], { type: 'audio/wav' });
     return wavBlob;
@@ -914,7 +918,9 @@ exportButton.addEventListener("click", async () => {
     exportRecorder.onstop = async () => {
         const blob = new Blob(exportChunks, { type: "audio/webm" });
         try {
-            const wavBlob = await convertWebmToWav(blob);
+            const bpm = parseFloat(bpmControl.value) || 120;
+            const duration = (30000 / bpm) * stepsPerBeat / 1000;
+            const wavBlob = await convertWebmToWav(blob, duration);
             const url = URL.createObjectURL(wavBlob);
             const a = document.createElement("a");
             a.style.display = "none";
@@ -958,7 +964,13 @@ function stopExporting() {
     schedulerTimerId = null;
 
     if (exportRecorder && exportRecorder.state === "recording") {
-        exportRecorder.stop();
+        // Delay stopping the recorder to ensure all scheduled buffer data flows in and gets encoded.
+        // We will trim the file to the exact loop duration during WAV conversion via FFmpeg anyway.
+        setTimeout(() => {
+            if (exportRecorder && exportRecorder.state === "recording") {
+                exportRecorder.stop();
+            }
+        }, 500);
     }
 
     exportButton.classList.remove("exporting");
