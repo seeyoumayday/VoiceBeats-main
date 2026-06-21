@@ -874,7 +874,8 @@ async function convertWebmToWav(webmBlob, duration) {
     await ffmpeg.load();
     ffmpeg.FS('writeFile', 'input.webm', await fetchFile(webmBlob));
     if (duration) {
-        await ffmpeg.run('-i', 'input.webm', '-t', duration.toString(), 'output.wav');
+        // -ss 0.5 skips the initial 500ms buffering silence, -t trims to exact loop duration
+        await ffmpeg.run('-ss', '0.5', '-i', 'input.webm', '-t', duration.toString(), 'output.wav');
     } else {
         await ffmpeg.run('-i', 'input.webm', 'output.wav');
     }
@@ -916,14 +917,18 @@ exportButton.addEventListener("click", async () => {
     };
 
     exportRecorder.onstart = () => {
-        isExporting = true;
-        exportStepCount = 0;
-        exportEndTime = 0;
-        currentStep = 0;
-        nextNoteTime = audioContext.currentTime;
+        // Wait 500ms for recorder graph buffer to stabilize before starting sequencer playback.
+        // We will skip this initial 500ms segment during conversion via FFmpeg -ss option.
+        setTimeout(() => {
+            isExporting = true;
+            exportStepCount = 0;
+            exportEndTime = 0;
+            currentStep = 0;
+            nextNoteTime = audioContext.currentTime;
 
-        // Launch scheduler loop for capturing
-        schedulerTimerId = setInterval(scheduler, lookahead);
+            // Launch scheduler loop for capturing
+            schedulerTimerId = setInterval(scheduler, lookahead);
+        }, 500);
     };
 
     exportRecorder.onstop = async () => {
