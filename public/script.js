@@ -750,7 +750,15 @@ tracks.forEach(track => {
             })
             .catch(error => {
                 console.error('Error accessing microphone:', error);
-                alert('マイクのアクセス許可が得られませんでした。');
+                if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                    alert('マイクの使用にはHTTPS接続（セキュア接続）が必要です。http接続ではスマートフォンのブラウザ仕様によりマイクが利用できません。');
+                } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    alert('マイクのアクセス許可が得られませんでした。ブラウザやOSの設定でマイクの使用が許可されているか確認してください。');
+                } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                    alert('マイクが別のアプリやタブで既に使用中のため、アクセスできません。');
+                } else {
+                    alert(`マイクのアクセス許可が得られませんでした（エラー: ${error.name}）。`);
+                }
                 
                 // Unlock buttons if failed
                 tracks.forEach(t => t.recordButton.disabled = false);
