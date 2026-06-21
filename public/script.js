@@ -702,47 +702,58 @@ tracks.forEach(track => {
                 }
 
                 const options = selectedMimeType ? { mimeType: selectedMimeType } : {};
-                try {
-                    mediaRecorder = new MediaRecorder(stream, options);
-                } catch (e) {
-                    console.warn("MediaRecorder initialization with options failed, retrying with defaults:", e);
-                    mediaRecorder = new MediaRecorder(stream);
-                }
-                recordedChunks = [];
+                
+                const startRecording = (opts) => {
+                    mediaRecorder = new MediaRecorder(stream, opts);
+                    recordedChunks = [];
 
-                mediaRecorder.ondataavailable = event => {
-                    if (event.data.size > 0) {
-                        recordedChunks.push(event.data);
-                    }
-                };
-
-                mediaRecorder.onstop = () => {
-                    // Release microphone device
-                    if (stream) {
-                        stream.getTracks().forEach(t => t.stop());
-                    }
-
-                    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || "audio/wav" });
-                    const url = URL.createObjectURL(blob);
-
-                    loadAudioFile(url).then(buffer => {
-                        if (buffer) {
-                            track.buffer = buffer;
-                            drawWaveform(buffer, track.waveformId);
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
                         }
-                        // Revoke to clean up browser memory
-                        URL.revokeObjectURL(url);
-                    });
+                    };
 
-                    // Restore recording buttons UI state
-                    tracks.forEach(t => {
-                        t.recordButton.disabled = false;
-                        t.recordButton.parentElement.setAttribute("data-tooltip", "録音");
-                    });
-                    track.recordButton.classList.remove("recording");
+                    mediaRecorder.onstop = () => {
+                        // Release microphone device
+                        if (stream) {
+                            stream.getTracks().forEach(t => t.stop());
+                        }
+
+                        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || "audio/wav" });
+                        const url = URL.createObjectURL(blob);
+
+                        loadAudioFile(url).then(buffer => {
+                            if (buffer) {
+                                track.buffer = buffer;
+                                drawWaveform(buffer, track.waveformId);
+                            }
+                            // Revoke to clean up browser memory
+                            URL.revokeObjectURL(url);
+                        });
+
+                        // Restore recording buttons UI state
+                        tracks.forEach(t => {
+                            t.recordButton.disabled = false;
+                            t.recordButton.parentElement.setAttribute("data-tooltip", "録音");
+                        });
+                        track.recordButton.classList.remove("recording");
+                    };
+
+                    mediaRecorder.start();
                 };
 
-                mediaRecorder.start();
+                try {
+                    startRecording(options);
+                } catch (e) {
+                    console.warn("MediaRecorder start with options failed, retrying with browser defaults:", e);
+                    try {
+                        startRecording({});
+                    } catch (e2) {
+                        console.error("MediaRecorder fallback failed:", e2);
+                        throw e2;
+                    }
+                }
+
                 track.recordButton.classList.add("recording");
                 track.recordButton.parentElement.setAttribute("data-tooltip", "録音中");
 
