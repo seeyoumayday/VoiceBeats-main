@@ -702,7 +702,12 @@ tracks.forEach(track => {
                 }
 
                 const options = selectedMimeType ? { mimeType: selectedMimeType } : {};
-                mediaRecorder = new MediaRecorder(stream, options);
+                try {
+                    mediaRecorder = new MediaRecorder(stream, options);
+                } catch (e) {
+                    console.warn("MediaRecorder initialization with options failed, retrying with defaults:", e);
+                    mediaRecorder = new MediaRecorder(stream);
+                }
                 recordedChunks = [];
 
                 mediaRecorder.ondataavailable = event => {
@@ -712,7 +717,7 @@ tracks.forEach(track => {
                 };
 
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { type: selectedMimeType || "audio/wav" });
+                    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || "audio/wav" });
                     const url = URL.createObjectURL(blob);
 
                     loadAudioFile(url).then(buffer => {
