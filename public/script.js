@@ -693,13 +693,17 @@ tracks.forEach(track => {
         if (navigator.audioSession) {
             try {
                 navigator.audioSession.type = 'play-and-record';
+                // Wait for iOS audio session transition (hardware route changes) to complete
+                await new Promise(resolve => setTimeout(resolve, 200));
             } catch (e) {
                 console.warn('Failed to set audio session type to play-and-record:', e);
             }
         }
 
         navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
+            .then(async stream => {
+                // Wait for media stream tracks to initialize completely (iOS Safari timing bug workaround)
+                await new Promise(resolve => setTimeout(resolve, 200));
                 // Determine supported MIME type for recording (especially for iOS Safari compatibility)
                 const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"];
                 let selectedMimeType = "";
