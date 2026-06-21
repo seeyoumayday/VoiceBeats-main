@@ -717,6 +717,11 @@ tracks.forEach(track => {
                 };
 
                 mediaRecorder.onstop = () => {
+                    // Release microphone device
+                    if (stream) {
+                        stream.getTracks().forEach(t => t.stop());
+                    }
+
                     const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || "audio/wav" });
                     const url = URL.createObjectURL(blob);
 
