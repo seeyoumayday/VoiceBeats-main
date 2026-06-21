@@ -85,7 +85,6 @@ let spectrumDataArray = null;
 // --- Recording & Export States ---
 let mediaRecorder = null;
 let recordedChunks = [];
-let sharedMicStream = null;
 
 let isExporting = false;
 let exportStepCount = 0;
@@ -671,36 +670,15 @@ tracks.forEach(track => {
 // Voice Sampling (Mic Recording) Logic
 // ============================================================================
 
-/**
- * Background helper to pre-warm the iOS audio session and pre-fetch microphone stream.
- * Reduces latency to 0ms when the user taps the record button.
- */
-async function setupMicrophoneStream() {
-    if (sharedMicStream && sharedMicStream.active) return;
-
-    if (navigator.audioSession) {
-        try {
-            navigator.audioSession.type = 'play-and-record';
-        } catch (e) {
-            console.warn('Failed to set audio session type to play-and-record in background:', e);
-        }
-    }
-
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            sharedMicStream = stream;
-            console.log("Microphone stream successfully cached in background.");
-        } catch (e) {
-            console.warn("Background microphone initialization failed or denied:", e);
-        }
-    }
-}
-
 tracks.forEach(track => {
     track.recordButton.addEventListener("click", async () => {
         if (mediaRecorder && mediaRecorder.state === "recording") {
             mediaRecorder.stop();
+            return;
+        }
+
+        // Ignore clicks if countdown is active to avoid multi-clicks
+        if (track.recordButton.classList.contains("countdown-active")) {
             return;
         }
 
@@ -713,153 +691,164 @@ tracks.forEach(track => {
         tracks.forEach(t => t.recordButton.disabled = true);
         track.recordButton.disabled = false;
 
-        const startWithStream = (stream) => {
-            // Determine supported MIME type for recording (especially for iOS Safari compatibility)
-            const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"];
-            let selectedMimeType = "";
-            for (const mime of mimeTypes) {
-                if (MediaRecorder.isTypeSupported(mime)) {
-                    selectedMimeType = mime;
-                    break;
-                }
-            }
-
-            const options = selectedMimeType ? { mimeType: selectedMimeType } : {};
-            
-            const startRecording = (opts) => {
-                mediaRecorder = new MediaRecorder(stream, opts);
-                recordedChunks = [];
-
-                mediaRecorder.ondataavailable = event => {
-                    if (event.data.size > 0) {
-                        recordedChunks.push(event.data);
-                    }
-                };
-
-                mediaRecorder.onstop = () => {
-                    // Release microphone device only if it's NOT the shared cached stream
-                    if (stream && stream !== sharedMicStream) {
-                        stream.getTracks().forEach(t => t.stop());
-                    }
-
-                    // Restore audio session to playback only if we are releasing the mic
-                    if (stream !== sharedMicStream && navigator.audioSession) {
-                        try {
-                            navigator.audioSession.type = 'playback';
-                        } catch (e) {
-                            console.warn('Failed to restore audio session type to playback:', e);
-                        }
-                    }
-
-                    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || "audio/wav" });
-                    const url = URL.createObjectURL(blob);
-
-                    loadAudioFile(url).then(buffer => {
-                        if (buffer) {
-                            track.buffer = buffer;
-                            drawWaveform(buffer, track.waveformId);
-                        }
-                        // Revoke to clean up browser memory
-                        URL.revokeObjectURL(url);
-                    });
-
-                    // Restore recording buttons UI state
-                    tracks.forEach(t => {
-                        t.recordButton.disabled = false;
-                        t.recordButton.parentElement.setAttribute("data-tooltip", "録音");
-                    });
-                    track.recordButton.classList.remove("recording");
-                };
-
-                mediaRecorder.start();
-            };
-
+        // Switch iOS audio session to play-and-record to allow microphone input
+        if (navigator.audioSession) {
             try {
-                startRecording(options);
+                navigator.audioSession.type = 'play-and-record';
+                // Wait for iOS audio session transition (hardware route changes) to complete
+                await new Promise(resolve => setTimeout(resolve, 200));
             } catch (e) {
-                console.warn("MediaRecorder start with options failed, retrying with browser defaults:", e);
-                try {
-                    startRecording({});
-                } catch (e2) {
-                    console.error("MediaRecorder fallback failed:", e2);
-                    throw e2;
-                }
+                console.warn('Failed to set audio session type to play-and-record:', e);
             }
-
-            track.recordButton.classList.add("recording");
-            track.recordButton.parentElement.setAttribute("data-tooltip", "録音中");
-
-            // Compute recording animation length from BPM (exactly 4 beats time limit)
-            const bpm = parseFloat(bpmControl.value) || 120;
-            const fillDuration = (30000 / bpm) * 4 / 1000;
-            track.recordButton.style.setProperty('--fill-duration', `${fillDuration}s`);
-
-            // Force record termination after 4 beats limit
-            setTimeout(() => {
-                if (mediaRecorder && mediaRecorder.state === "recording") {
-                    mediaRecorder.stop();
-                }
-            }, (30000 / bpm) * 4);
-        };
-
-        // Execution path
-        if (sharedMicStream && sharedMicStream.active) {
-            // Use cached stream - ZERO LATENCY
-            try {
-                startWithStream(sharedMicStream);
-            } catch (err) {
-                console.warn("Recording with cached stream failed, requesting new stream:", err);
-                if (sharedMicStream) {
-                    sharedMicStream.getTracks().forEach(t => t.stop());
-                }
-                sharedMicStream = null;
-                requestNewStreamAndStart();
-            }
-        } else {
-            requestNewStreamAndStart();
         }
 
-        async function requestNewStreamAndStart() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert('マイク入力がサポートされていないブラウザです。');
-                tracks.forEach(t => t.recordButton.disabled = false);
-                return;
-            }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('マイク入力がサポートされていないブラウザです。');
+            tracks.forEach(t => t.recordButton.disabled = false);
+            return;
+        }
 
-            // Switch iOS audio session to play-and-record to allow microphone input
-            if (navigator.audioSession) {
-                try {
-                    navigator.audioSession.type = 'play-and-record';
-                    // Wait for iOS audio session transition (hardware route changes) to complete
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                } catch (e) {
-                    console.warn('Failed to set audio session type to play-and-record:', e);
-                }
-            }
+        // 1. Start fetching microphone stream in background
+        let micStreamPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(async stream => {
-                    // Wait for media stream tracks to initialize completely (iOS Safari timing bug workaround)
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    sharedMicStream = stream; // Cache for next recordings
-                    startWithStream(stream);
-                })
-                .catch(error => {
-                    console.error('Error accessing microphone:', error);
-                    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                        alert('マイクの使用にはHTTPS接続（セキュア接続）が必要です。http接続ではスマートフォンのブラウザ仕様によりマイクが利用できません。');
-                    } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-                        alert('マイクのアクセス許可が得られませんでした。ブラウザやOSの設定でマイクの使用が許可されているか確認してください。');
-                    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-                        alert('マイクが別のアプリやタブで既に使用中のため、アクセスできません。');
-                    } else {
-                        alert(`マイクのアクセス許可が得られませんでした（エラー: ${error.name}）。`);
+        // 2. Start countdown animation visual feedback (3.. 2.. 1..)
+        track.recordButton.classList.add("countdown-active");
+        let countdown = 3;
+        track.recordButton.textContent = countdown;
+        track.recordButton.parentElement.setAttribute("data-tooltip", `録音開始まで ${countdown}`);
+
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                track.recordButton.textContent = countdown;
+                track.recordButton.parentElement.setAttribute("data-tooltip", `録音開始まで ${countdown}`);
+            } else {
+                clearInterval(countdownInterval);
+            }
+        }, 500); // 500ms interval, total 1.5 seconds preparation
+
+        // 3. After countdown finishes (1.5 seconds), start recording using the pre-warmed stream
+        setTimeout(() => {
+            micStreamPromise.then(async stream => {
+                // Safeguard: Wait slightly for WebKit to stabilize the tracks
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+                // Determine supported MIME type for recording (especially for iOS Safari compatibility)
+                const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"];
+                let selectedMimeType = "";
+                for (const mime of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(mime)) {
+                        selectedMimeType = mime;
+                        break;
                     }
-                    
-                    // Unlock buttons if failed
-                    tracks.forEach(t => t.recordButton.disabled = false);
+                }
+
+                const options = selectedMimeType ? { mimeType: selectedMimeType } : {};
+                
+                const startRecording = (opts) => {
+                    mediaRecorder = new MediaRecorder(stream, opts);
+                    recordedChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        // Release microphone device completely
+                        if (stream) {
+                            stream.getTracks().forEach(t => t.stop());
+                        }
+
+                        // Restore audio session to playback
+                        if (navigator.audioSession) {
+                            try {
+                                navigator.audioSession.type = 'playback';
+                            } catch (e) {
+                                console.warn('Failed to restore audio session type to playback:', e);
+                            }
+                        }
+
+                        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || "audio/wav" });
+                        const url = URL.createObjectURL(blob);
+
+                        loadAudioFile(url).then(buffer => {
+                            if (buffer) {
+                                track.buffer = buffer;
+                                drawWaveform(buffer, track.waveformId);
+                            }
+                            // Revoke to clean up browser memory
+                            URL.revokeObjectURL(url);
+                        });
+
+                        // Restore recording buttons UI state
+                        tracks.forEach(t => {
+                            t.recordButton.disabled = false;
+                            t.recordButton.parentElement.setAttribute("data-tooltip", "録音");
+                            t.recordButton.textContent = "";
+                        });
+                        track.recordButton.classList.remove("recording");
+                    };
+
+                    mediaRecorder.start();
+                };
+
+                try {
+                    startRecording(options);
+                } catch (e) {
+                    console.warn("MediaRecorder start with options failed, retrying with browser defaults:", e);
+                    try {
+                        startRecording({});
+                    } catch (e2) {
+                        console.error("MediaRecorder fallback failed:", e2);
+                        throw e2;
+                    }
+                }
+
+                // Switch UI from countdown to recording state
+                track.recordButton.classList.remove("countdown-active");
+                track.recordButton.textContent = "";
+                track.recordButton.classList.add("recording");
+                track.recordButton.parentElement.setAttribute("data-tooltip", "録音中");
+
+                // Compute recording animation length from BPM (exactly 4 beats time limit)
+                const bpm = parseFloat(bpmControl.value) || 120;
+                const fillDuration = (30000 / bpm) * 4 / 1000;
+                track.recordButton.style.setProperty('--fill-duration', `${fillDuration}s`);
+
+                // Force record termination after 4 beats limit
+                setTimeout(() => {
+                    if (mediaRecorder && mediaRecorder.state === "recording") {
+                        mediaRecorder.stop();
+                    }
+                }, (30000 / bpm) * 4);
+            })
+            .catch(error => {
+                // Clear countdown UI if stream fails
+                clearInterval(countdownInterval);
+                track.recordButton.classList.remove("countdown-active");
+                track.recordButton.textContent = "";
+
+                console.error('Error accessing microphone:', error);
+                if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                    alert('マイクの使用にはHTTPS接続（セキュア接続）が必要です。http接続ではスマートフォンのブラウザ仕様によりマイクが利用できません。');
+                } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    alert('マイクのアクセス許可が得られませんでした。ブラウザやOSの設定でマイクの使用が許可されているか確認してください。');
+                } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                    alert('マイクが別のアプリやタブで既に使用中のため、アクセスできません。');
+                } else {
+                    alert(`マイクのアクセス許可が得られませんでした（エラー: ${error.name}）。`);
+                }
+                
+                // Unlock buttons if failed
+                tracks.forEach(t => {
+                    t.recordButton.disabled = false;
+                    t.recordButton.parentElement.setAttribute("data-tooltip", "録音");
+                    t.recordButton.textContent = "";
                 });
-        }
+            });
+        }, 1500); // 1.5 seconds countdown matches 3 intervals of 500ms
     });
 });
 
@@ -1063,7 +1052,6 @@ window.onload = function() {
                     if (audioContext.state === "running") {
                         document.removeEventListener("click", unlockAudio);
                         document.removeEventListener("touchstart", unlockAudio);
-                        setupMicrophoneStream(); // Pre-warm mic stream on first user interaction
                     }
                 }).catch(err => {
                     console.error("AudioContext resume failed:", err);
@@ -1071,7 +1059,6 @@ window.onload = function() {
             } else if (audioContext.state === "running") {
                 document.removeEventListener("click", unlockAudio);
                 document.removeEventListener("touchstart", unlockAudio);
-                setupMicrophoneStream(); // Pre-warm mic stream on first user interaction
             }
         }
     };

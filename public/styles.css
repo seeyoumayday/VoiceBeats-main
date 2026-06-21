@@ -1879,6 +1879,21 @@ nav ul li a:hover {
         border-radius: 50% !important;
     }
 
+    .track-controls .record-button.countdown-active {
+        background-color: #fef08a !important; /* Yellow for preparation */
+        border-color: #eab308 !important;
+        color: #854d0e !important;
+        font-weight: 800;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .track-controls .record-button.countdown-active::before {
+        display: none !important; /* Hide recording icon during countdown */
+    }
+
     .track-controls .mute-button {
         width: 40px !important;
         height: 40px !important;
